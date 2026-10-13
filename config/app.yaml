@@ -1,0 +1,197 @@
+# Konfigurasi aplikasi JalurKu.
+# Semua nilai penilaian (bobot, batas, matriks) adalah PLACEHOLDER yang dikalibrasi tim data.
+# Ketentuan resmi SNPMB (batas pilihan, kuota sekolah, komposisi) ada di data/seed/config_ketentuan.csv.
+versi_config: 1
+
+sesi:
+  ttl_jam: 24                      # dapat ditimpa env SESSION_TTL_HOURS
+  interval_pembersihan_menit: 10
+
+rate_limit:
+  per_sesi: {maks: 120, jendela_detik: 60}
+  per_ip: {maks: 240, jendela_detik: 60}
+  buat_sesi_per_ip: {maks: 20, jendela_detik: 60}
+  llm_per_sesi: {maks: 10, jendela_detik: 60}
+  proxy_tepercaya: []              # IP/CIDR proxy yang boleh menyetel X-Forwarded-For
+
+llm:
+  # Nama model generatif. Cek ketersediaan dan kuota di AI Studio (PRD bagian 17 #7)
+  # lalu jalankan: uv run python -m scripts.check_gemini
+  model: gemini-2.5-flash
+  timeout_detik: 20
+  maks_konkuren: 3
+  cache_ttl_detik: 86400
+
+embedding:
+  # DIKUNCI. Mengganti model atau dimensi berarti migrasi kolom dan re-embed semua chunk.
+  model: gemini-embedding-001
+  dimensi: 768
+
+rag:
+  ukuran_chunk_min: 500
+  ukuran_chunk_maks: 1000
+  overlap_chunk: 150
+  maks_token_chunk: 2048
+  ukuran_batch_embedding: 20       # jumlah chunk per panggilan embedding saat ingest
+  top_k: 4
+  ambang_skor: 0.55                # cosine similarity minimum untuk memanggil LLM
+  saran_pertanyaan:
+    - Apa saja dokumen yang perlu disiapkan untuk SNBP?
+    - Apa syarat mengikuti SNBT?
+    - Berapa jumlah pilihan program studi di SNBP dan SNBT?
+    - Apa perbedaan SNBP dan SNBT?
+
+# Himpunan dimensi minat (placeholder RIASEC sampai tim data memutuskan, PRD bagian 17 #6)
+minat:
+  dimensi: [realistis, investigatif, artistik, sosial, enterprising, konvensional]
+
+# Batas validasi profil (FR-P2). Tahun lulus diukur terhadap tahun siklus pendaftaran aktif.
+profil:
+  tahun_lulus_mundur: 15
+  tahun_lulus_maju: 1
+  skor_tryout_min: 0
+  skor_tryout_maks: 1000           # skala skor UTBK/tryout belum dipastikan, longgarkan bila perlu
+  paket_c_usia_min: 10
+  paket_c_usia_maks: 70
+
+# ---------------------------------------------------------------------------------------------
+# Penilaian reach/match/safe (PRD 8.2). HEURISTIK, bukan probabilitas. Tidak ada persentase.
+# Semua angka di bawah placeholder, dikalibrasi tim data. Mengubahnya mengubah hasil tanpa kode.
+#   tier siswa  = rata-rata tertimbang faktor siswa yang DIKETAHUI (0-1), lalu dipetakan lewat batas
+#   pita keketatan = peminat / daya tampung, dipetakan lewat dua batas (tetap) atau persentil data
+#   kategori    = matriks[tier][pita]
+# Batas bawah inklusif untuk kelompok yang lebih tinggi: skor == batas masuk tier/pita yang lebih tinggi.
+# ---------------------------------------------------------------------------------------------
+snbp:
+  tier_siswa: &tier_awal
+    bobot: {rapor: 0.5, tren: 0.2, peringkat: 0.3}
+    batas: {lemah_sedang: 0.60, sedang_kuat: 0.80}   # skor_siswa 0-1
+    tren: {skala_poin: 20}          # kenaikan rata-rata rapor sebesar ini = tren 1.0; turun sebesar ini = 0.0
+  pita_keketatan:
+    metode: tetap                   # tetap | persentil
+    batas: {rendah_sedang: 5, sedang_tinggi: 15}     # rasio peminat/daya tampung (dipakai bila metode tetap)
+    persentil: {rendah_sedang: 33, sedang_tinggi: 67}  # dipakai bila metode persentil
+    min_sampel: 8                   # jumlah minimum prodi pembanding agar pita bisa dihitung
+    kelompok: semua                 # semua | program (hitung persentil terpisah akademik vs vokasi)
+  matriks: &matriks_awal            # baris = tier siswa, kolom = pita keketatan
+    kuat:
+      rendah: {kategori: safe}
+      sedang: {kategori: match}
+      tinggi: {kategori: reach, catatan: batas_match_reach}
+    sedang:
+      rendah: {kategori: match}
+      sedang: {kategori: reach, catatan: batas_match_reach}
+      tinggi: {kategori: reach}
+    lemah:
+      rendah: {kategori: reach, catatan: batas_match_reach}
+      sedang: {kategori: reach}
+      tinggi: {kategori: reach}
+
+snbt:
+  # Tanpa acuan skor resmi, SNBT memakai matriks yang sama. Tier dari rapor hanya PROKSI karena seleksi
+  # berdasar skor UTBK. Bila tabel acuan_skor terisi untuk sebuah prodi, jalur skor-vs-acuan dipakai.
+  tier_siswa: *tier_awal
+  pita_keketatan:
+    metode: persentil               # batas pita dihitung dari sebaran data prodi yang ada
+    batas: {rendah_sedang: 5, sedang_tinggi: 15}
+    persentil: {rendah_sedang: 33, sedang_tinggi: 67}
+    min_sampel: 8
+    kelompok: semua
+  matriks: *matriks_awal
+  # Isi bila sudah ada skala skor tryout yang bisa dipetakan; tier lalu berpindah ke skor tryout.
+  # skala_skor_tryout:
+  #   batas: {lemah_sedang: 600, sedang_kuat: 750}
+  skala_skor_tryout: null
+
+# ---------------------------------------------------------------------------------------------
+# Evaluasi komposisi pilihan (PRD 8.4). Dihitung PER JALUR. Batas jumlah pilihan dan komposisi
+# SNBT berasal dari ketentuan resmi (config_ketentuan.csv), bukan dari sini.
+# ---------------------------------------------------------------------------------------------
+strategi:
+  min_pilihan_untuk_evaluasi: 2    # aturan rasio hanya berlaku bila pilihan yang dapat dinilai >= ini
+  min_safe: 1                      # minimal jumlah pilihan safe
+  maks_rasio_reach: 0.5            # maksimal porsi reach dari pilihan yang dapat dinilai
+  peringatan_satu_ptn: true
+  peringatan_satu_jalur: true
+  maks_saran_swap: 3               # maksimal saran swap per temuan
+
+# ---------------------------------------------------------------------------------------------
+# /query: deteksi pertanyaan bertipe KEPUTUSAN ("aku lolos nggak?"). Dijawab dari mesin aturan,
+# bukan LLM (FR-Q5). Aturan kata kunci sederhana; ubah pola bila ada pertanyaan yang salah rute.
+# Kalimat bersyarat ("kalau saya lulus SNBP, bolehkah ...") dianggap pertanyaan aturan, bukan keputusan.
+# ---------------------------------------------------------------------------------------------
+query:
+  maks_saran_pertanyaan: 3
+  pola_keputusan:
+    - '\b(aku|saya|gue|gw|ku)\b.*\b(lolos|diterima|keterima|memenuhi syarat|layak|berhak|bisa ikut|boleh ikut|dapat ikut|bisakah|bolehkah|dapatkah)\b'
+    - '\b(lolos|diterima|keterima)\b.*\b(nggak|ngga|gak|tidak|kah)\b.*\b(aku|saya|ku)\b'
+    - '\b(peluang|kemungkinan|chance)\b.*\b(aku|saya|ku)\b'
+    - '\b(aku|saya|ku)\b.*\b(peluang|kemungkinan|chance)\b'
+    - '\bpasti\b.*\b(lolos|diterima|keterima)\b'
+  pengecualian_keputusan: [kalau, jika, bila, andai, seandainya, misalnya, umpamanya]
+
+# Teks yang ditampilkan ke siswa (bebas diubah tanpa revisi PRD)
+teks:
+  catatan_sel:
+    batas_match_reach: Berada di batas antara match dan reach. Perlakukan sebagai reach dan siapkan pilihan lain.
+
+# ---------------------------------------------------------------------------------------------
+# Eksplorasi jurusan (PRD 8.3, FR-E1 sampai E3). Deterministik, tanpa LLM.
+#   kecocokan = bobot.minat * kemiripan_minat + bobot.nilai * kesesuaian_nilai
+#   kemiripan_minat  = cosine(vektor minat siswa, vektor minat rumpun), dimensi = minat.dimensi
+#   kesesuaian_nilai = rata-rata tertimbang nilai rapor semester 1-5 pada mapel relevan, dibagi 100
+# Komponen yang tidak bisa dihitung (minat kosong / tidak ada mapel relevan yang terisi) dikeluarkan dan
+# bobot sisanya dinormalisasi; keduanya kosong = data_kurang, tanpa rekomendasi.
+#
+# PROFIL RUMPUN DI BAWAH ADALAH KLASIFIKASI AWAL (tema Holland/RIASEC, mapel relevan, contoh profesi
+# umum), BUKAN data resmi dan BELUM diverifikasi tim data. Bila tim data mengisi prodi.tag_minat,
+# prodi.mapel_penentu, atau tabel profesi, data itu otomatis dipakai menggantikan nilai di sini.
+# ---------------------------------------------------------------------------------------------
+explore:
+  top_n_default: 5
+  top_n_maks: 10
+  bobot: {minat: 0.5, nilai: 0.5}
+  maks_prodi_per_rumpun: 20
+  maks_prodi_kelayakan: 30
+  maks_profesi: 3
+  rumpun:
+    Teknik:
+      minat: {realistis: 0.9, investigatif: 0.8, konvensional: 0.3}
+      mapel: {matematika: 1.0, fisika: 1.0, kimia: 0.5}
+      profesi: [Insinyur, Manajer proyek konstruksi, Peneliti dan pengembang produk]
+    Teknologi Informasi:
+      minat: {investigatif: 0.9, realistis: 0.5, konvensional: 0.5}
+      mapel: {matematika: 1.0, informatika: 0.8, bahasa_inggris: 0.6, fisika: 0.5}
+      profesi: [Pengembang perangkat lunak, Analis data, Spesialis keamanan siber]
+    Kesehatan:
+      minat: {investigatif: 0.8, sosial: 0.8, realistis: 0.5}
+      mapel: {biologi: 1.0, kimia: 1.0, matematika: 0.5}
+      profesi: [Dokter, Fisioterapis, Administrator rumah sakit]
+    Hukum:
+      minat: {enterprising: 0.7, konvensional: 0.6, sosial: 0.5, investigatif: 0.5}
+      mapel: {bahasa_indonesia: 1.0, pkn: 0.8, bahasa_inggris: 0.6, sejarah: 0.5}
+      profesi: [Advokat, Jaksa atau hakim, Konsultan hukum perusahaan]
+    Ekonomi dan Bisnis:
+      minat: {enterprising: 0.9, konvensional: 0.8, investigatif: 0.4}
+      mapel: {matematika: 1.0, ekonomi: 1.0, bahasa_inggris: 0.5}
+      profesi: [Akuntan, Analis keuangan, Manajer bisnis]
+    Psikologi:
+      minat: {sosial: 0.9, investigatif: 0.8, artistik: 0.3}
+      mapel: {bahasa_indonesia: 0.8, biologi: 0.7, matematika: 0.6, sosiologi: 0.6}
+      profesi: [Psikolog klinis, Psikolog industri dan organisasi, Psikolog pendidikan]
+    Sosial dan Komunikasi:
+      minat: {sosial: 0.8, artistik: 0.6, enterprising: 0.6}
+      mapel: {bahasa_indonesia: 1.0, bahasa_inggris: 0.8, sosiologi: 0.5}
+      profesi: [Jurnalis, Praktisi hubungan masyarakat, Produser media]
+    Sosial dan Politik:
+      minat: {sosial: 0.8, enterprising: 0.7, investigatif: 0.5}
+      mapel: {bahasa_indonesia: 0.8, bahasa_inggris: 0.8, sejarah: 0.8, sosiologi: 0.8}
+      profesi: [Diplomat, Analis kebijakan publik, Peneliti sosial]
+    Seni dan Desain:
+      minat: {artistik: 0.95, realistis: 0.4, enterprising: 0.4}
+      mapel: {seni_budaya: 1.0, bahasa_indonesia: 0.4, bahasa_inggris: 0.4}
+      profesi: [Desainer komunikasi visual, Ilustrator, Art director]
+    Arsitektur dan Desain:
+      minat: {artistik: 0.8, realistis: 0.7, investigatif: 0.5}
+      mapel: {seni_budaya: 1.0, matematika: 0.8, fisika: 0.8}
+      profesi: [Arsitek, Desainer interior, Perencana kota]

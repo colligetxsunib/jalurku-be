@@ -1,0 +1,204 @@
+{
+  "versi": 1,
+  "catatan": "Kasus uji gate (PRD bagian 14). Harapan ditulis dari pembacaan syarat di data/seed/rule_gate.csv dan config_ketentuan.csv (sumber: paparan SNPMB 2026), BUKAN disalin dari keluaran mesin. Kasus baru dianggap terverifikasi bila terakhir_diverifikasi dan diverifikasi_oleh diisi manusia setelah mencocokkannya dengan panduan resmi. Kode tidak pernah mengisi dua kolom itu.",
+  "kasus": [
+    {
+      "id": "GT-01", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-01",
+      "deskripsi": "PRD kasus 1: lulusan tepat di batas tahun (siklus 2026 minus 2) lolos",
+      "override": {"tahun_lulus": 2024},
+      "harapan": {"gate": "lolos", "penilaian": "ada", "syarat": {"SNBT-01": "lolos"}}
+    },
+    {
+      "id": "GT-02", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-01",
+      "deskripsi": "PRD kasus 2: lulusan satu tahun melewati batas tidak memenuhi syarat, penilaian null",
+      "override": {"tahun_lulus": 2023},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBT-01": "gagal"}}
+    },
+    {
+      "id": "GT-03", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-01, SNBT-03",
+      "deskripsi": "PRD kasus 4: satu syarat gagal bersamaan dengan satu data_kurang menghasilkan tidak_memenuhi_syarat",
+      "override": {"tahun_lulus": 2023, "wni_punya_nik": null},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBT-01": "gagal", "SNBT-03": "data_kurang"}}
+    },
+    {
+      "id": "GT-04", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-03",
+      "deskripsi": "Satu data belum diisi (WNI punya NIK) menghasilkan data_kurang, penilaian null, tidak menebak",
+      "override": {"wni_punya_nik": null},
+      "harapan": {"gate": "data_kurang", "penilaian": "null", "syarat": {"SNBT-03": "data_kurang"}}
+    },
+    {
+      "id": "GT-05", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-01..05",
+      "deskripsi": "PRD kasus 5: semua syarat terpenuhi lolos lalu penilaian dijalankan",
+      "override": {},
+      "harapan": {"gate": "lolos", "penilaian": "ada"}
+    },
+    {
+      "id": "GT-06", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-04",
+      "deskripsi": "Lulus SNBP dalam 3 tahun terakhir tidak bisa ikut SNBT",
+      "override": {"lulus_snbp_3_tahun_terakhir": true},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBT-04": "gagal"}}
+    },
+    {
+      "id": "GT-07", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-05",
+      "deskripsi": "UTBK hanya boleh diikuti sekali pada tahun siklus",
+      "override": {"sudah_ikut_utbk_tahun_siklus": true},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBT-05": "gagal"}}
+    },
+    {
+      "id": "GT-08", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-02",
+      "deskripsi": "Paket C berusia tepat 25 tahun per 1 Juli lolos (batas inklusif)",
+      "override": {"jenjang_sekolah": "Paket C", "paket_c_usia_per_1_juli": 25},
+      "harapan": {"gate": "lolos", "penilaian": "ada", "syarat": {"SNBT-02": "lolos"}}
+    },
+    {
+      "id": "GT-09", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-02",
+      "deskripsi": "Paket C berusia 26 tahun tidak memenuhi syarat",
+      "override": {"jenjang_sekolah": "Paket C", "paket_c_usia_per_1_juli": 26},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBT-02": "gagal"}}
+    },
+    {
+      "id": "GT-10", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-02",
+      "deskripsi": "Paket C tanpa usia: data_kurang, jangan menganggap lolos",
+      "override": {"jenjang_sekolah": "Paket C", "paket_c_usia_per_1_juli": null},
+      "harapan": {"gate": "data_kurang", "penilaian": "null", "syarat": {"SNBT-02": "data_kurang"}}
+    },
+    {
+      "id": "GT-11", "dasar": "rani", "jalur": "SNBT", "sumber_aturan": "SNBT-02",
+      "deskripsi": "Siswa SMA tidak terkena syarat usia Paket C (tidak berlaku)",
+      "override": {},
+      "harapan": {"gate": "lolos", "penilaian": "ada", "syarat": {"SNBT-02": "tidak_berlaku"}}
+    },
+    {
+      "id": "GS-01", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Akreditasi B tanpa e-Rapor: kuota 25 persen; peringkat 30 dari 120 tepat 25 persen lolos",
+      "override": {},
+      "harapan": {"gate": "lolos", "penilaian": "ada", "syarat": {"SNBP-05": "lolos"}}
+    },
+    {
+      "id": "GS-02", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Akreditasi B tanpa e-Rapor: peringkat 31 dari 120 (25,83 persen) di luar kuota",
+      "override": {"peringkat_sekolah": 31},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-05": "gagal"}}
+    },
+    {
+      "id": "GS-03", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Akreditasi B dengan e-Rapor: kuota 25 + 5 = 30 persen; peringkat 36 dari 120 tepat 30 persen lolos",
+      "override": {"pakai_erapor": true, "peringkat_sekolah": 36},
+      "harapan": {"gate": "lolos", "penilaian": "ada", "syarat": {"SNBP-05": "lolos"}}
+    },
+    {
+      "id": "GS-04", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Akreditasi B dengan e-Rapor: peringkat 37 dari 120 (30,83 persen) di luar kuota",
+      "override": {"pakai_erapor": true, "peringkat_sekolah": 37},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-05": "gagal"}}
+    },
+    {
+      "id": "GS-05", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Akreditasi A: kuota 40 persen; peringkat 48 dari 120 tepat 40 persen lolos",
+      "override": {"akreditasi_sekolah": "A", "peringkat_sekolah": 48},
+      "harapan": {"gate": "lolos", "penilaian": "ada", "syarat": {"SNBP-05": "lolos"}}
+    },
+    {
+      "id": "GS-06", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Akreditasi A: peringkat 49 dari 120 (40,83 persen) di luar kuota",
+      "override": {"akreditasi_sekolah": "A", "peringkat_sekolah": 49},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-05": "gagal"}}
+    },
+    {
+      "id": "GS-07", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Akreditasi C: kuota 5 persen; peringkat 6 dari 120 tepat 5 persen lolos",
+      "override": {"akreditasi_sekolah": "C", "peringkat_sekolah": 6},
+      "harapan": {"gate": "lolos", "penilaian": "ada", "syarat": {"SNBP-05": "lolos"}}
+    },
+    {
+      "id": "GS-08", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Sekolah tidak terakreditasi memakai kuota 'C dan lainnya' 5 persen; peringkat 7 dari 120 di luar kuota",
+      "override": {"akreditasi_sekolah": "tidak_terakreditasi", "peringkat_sekolah": 7},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-05": "gagal"}}
+    },
+    {
+      "id": "GS-09", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-01",
+      "deskripsi": "SNBP hanya untuk siswa kelas terakhir: lulusan 2025 tidak memenuhi syarat",
+      "override": {"tahun_lulus": 2025},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-01": "gagal"}}
+    },
+    {
+      "id": "GS-10", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-02",
+      "deskripsi": "Paket C tidak termasuk SNBP",
+      "override": {"jenjang_sekolah": "Paket C", "paket_c_usia_per_1_juli": 20},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-02": "gagal"}}
+    },
+    {
+      "id": "GS-11", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-06",
+      "deskripsi": "Tanpa nilai TKA: tidak memenuhi syarat",
+      "override": {"punya_nilai_tka": false},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-06": "gagal"}}
+    },
+    {
+      "id": "GS-12", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-06",
+      "deskripsi": "Status nilai TKA belum diisi: data_kurang",
+      "override": {"punya_nilai_tka": null},
+      "harapan": {"gate": "data_kurang", "penilaian": "null", "syarat": {"SNBP-06": "data_kurang"}}
+    },
+    {
+      "id": "GS-13", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-07",
+      "deskripsi": "PRD kasus 3: kelengkapan rapor di PDSS belum diisi menghasilkan data_kurang",
+      "override": {"rapor_lengkap_di_pdss": null},
+      "harapan": {"gate": "data_kurang", "penilaian": "null", "syarat": {"SNBP-07": "data_kurang"}}
+    },
+    {
+      "id": "GS-14", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-07",
+      "deskripsi": "Rapor tidak lengkap di PDSS: tidak memenuhi syarat",
+      "override": {"rapor_lengkap_di_pdss": false},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-07": "gagal"}}
+    },
+    {
+      "id": "GS-15", "dasar": "rani", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-08",
+      "deskripsi": "Syarat khusus prodi belum dikonfirmasi siswa: data_kurang beserta pertanyaannya",
+      "override": {},
+      "harapan": {"gate": "data_kurang", "penilaian": "null", "syarat": {"SNBP-08": "data_kurang"}}
+    },
+    {
+      "id": "GS-16", "dasar": "rani", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-08",
+      "deskripsi": "Siswa menyatakan tidak memenuhi syarat khusus prodi: tidak memenuhi syarat",
+      "override": {"konfirmasi_syarat_prodi": {"ui-teknik-industri": false}},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-08": "gagal"}}
+    },
+    {
+      "id": "GS-17", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-03",
+      "deskripsi": "Sekolah tanpa NPSN: tidak memenuhi syarat",
+      "override": {"sekolah_punya_npsn": false},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-03": "gagal"}}
+    },
+    {
+      "id": "GS-18", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-04",
+      "deskripsi": "Sekolah tidak berkurikulum nasional: tidak memenuhi syarat",
+      "override": {"sekolah_kurikulum_nasional": false},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-04": "gagal"}}
+    },
+    {
+      "id": "GS-19", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-01, SNBP-06",
+      "deskripsi": "Satu syarat gagal bersamaan dengan satu data_kurang menghasilkan tidak_memenuhi_syarat",
+      "override": {"tahun_lulus": 2025, "punya_nilai_tka": null},
+      "harapan": {"gate": "tidak_memenuhi_syarat", "penilaian": "null", "syarat": {"SNBP-01": "gagal", "SNBP-06": "data_kurang"}}
+    },
+    {
+      "id": "GS-20", "dasar": "dimas", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-05",
+      "deskripsi": "Peringkat sekolah belum diisi: data_kurang, tidak menebak kuota",
+      "override": {"peringkat_sekolah": null},
+      "harapan": {"gate": "data_kurang", "penilaian": "null", "syarat": {"SNBP-05": "data_kurang"}}
+    },
+    {
+      "id": "GS-21", "dasar": "sinta", "jalur": "SNBP", "prodi_id": "ui-teknik-industri", "sumber_aturan": "SNBP-01..08",
+      "deskripsi": "Profil baru terisi sebagian: data_kurang untuk semua yang belum diisi",
+      "override": {},
+      "harapan": {"gate": "data_kurang", "penilaian": "null"}
+    },
+    {
+      "id": "GT-12", "dasar": "sinta", "jalur": "SNBT", "sumber_aturan": "SNBT-01..05",
+      "deskripsi": "Profil baru terisi sebagian: SNBT data_kurang",
+      "override": {},
+      "harapan": {"gate": "data_kurang", "penilaian": "null"}
+    }
+  ]
+}

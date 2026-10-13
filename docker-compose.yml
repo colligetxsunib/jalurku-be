@@ -1,0 +1,33 @@
+# Lingkungan pengembangan. Produksi: deploy/docker-compose.prod.yml (api + db + nginx).
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: jalurku
+      POSTGRES_PASSWORD: jalurku
+      POSTGRES_DB: jalurku
+    ports:
+      - "127.0.0.1:5433:5432"   # 5433 agar tidak bentrok dengan PostgreSQL lokal di 5432
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jalurku -d jalurku"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    profiles: ["api"]
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://jalurku:jalurku@db:5432/jalurku
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+volumes:
+  dbdata:

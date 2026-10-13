@@ -1,0 +1,42 @@
+# Mode HTTPS: dipilih otomatis oleh entrypoint.sh bila sertifikat Let's Encrypt untuk ${DOMAIN} ada
+# di /etc/letsencrypt/live/${DOMAIN}/ (diterbitkan oleh deploy/init-cert.sh, diperbarui certbot).
+include /etc/nginx/snippets/http-global.conf;
+
+include /etc/nginx/snippets/default-server.conf;
+
+# Host tak dikenal di 443: tolak handshake tanpa membuka sertifikat.
+server {
+    listen 443 ssl default_server;
+    server_name _;
+    ssl_reject_handshake on;
+}
+
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+    }
+
+    # Tujuan redirect memakai nama domain tetap, bukan $host, agar tidak bisa dibelokkan lewat Host palsu.
+    location / {
+        return 301 https://${DOMAIN}$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+    ssl_session_tickets off;
+
+    include /etc/nginx/snippets/app.conf;
+}

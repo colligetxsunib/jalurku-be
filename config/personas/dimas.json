@@ -1,0 +1,112 @@
+{
+  "id": "dimas",
+  "nama": "Dimas (persona fiktif)",
+  "fiktif": true,
+  "skenario": "B",
+  "deskripsi": "Sudah punya target: prodi teknik di UI. Sekolah akreditasi B tanpa e-Rapor, peringkat tepat di batas kuota 25 persen siswa.",
+  "profil": {
+    "tahun_lulus": 2026,
+    "provinsi": "Jawa Barat",
+    "jenjang_sekolah": "SMA",
+    "akreditasi_sekolah": "B",
+    "nilai_rapor": {
+      "semester_1": {
+        "matematika": 78,
+        "fisika": 76,
+        "kimia": 74,
+        "bahasa_indonesia": 80,
+        "bahasa_inggris": 79
+      },
+      "semester_2": {
+        "matematika": 80,
+        "fisika": 77,
+        "kimia": 75,
+        "bahasa_indonesia": 80,
+        "bahasa_inggris": 80
+      },
+      "semester_3": {
+        "matematika": 82,
+        "fisika": 79,
+        "kimia": 76,
+        "bahasa_indonesia": 81,
+        "bahasa_inggris": 80
+      },
+      "semester_4": {
+        "matematika": 83,
+        "fisika": 80,
+        "kimia": 77,
+        "bahasa_indonesia": 81,
+        "bahasa_inggris": 81
+      },
+      "semester_5": {
+        "matematika": 84,
+        "fisika": 82,
+        "kimia": 78,
+        "bahasa_indonesia": 82,
+        "bahasa_inggris": 82
+      }
+    },
+    "minat": {
+      "realistis": 0.8,
+      "investigatif": 0.7,
+      "artistik": 0.2,
+      "sosial": 0.3,
+      "enterprising": 0.4,
+      "konvensional": 0.5
+    },
+    "peringkat_sekolah": 30,
+    "jumlah_siswa_angkatan": 120,
+    "alumni_info": {
+      "ui-teknik-industri": "tidak_tahu"
+    },
+    "punya_nilai_tka": true,
+    "sekolah_punya_npsn": true,
+    "sekolah_kurikulum_nasional": true,
+    "pakai_erapor": false,
+    "rapor_lengkap_di_pdss": true,
+    "wni_punya_nik": true,
+    "lulus_snbp_3_tahun_terakhir": false,
+    "sudah_ikut_utbk_tahun_siklus": false,
+    "konfirmasi_syarat_prodi": {
+      "ui-teknik-industri": true,
+      "ui-teknik-elektro": true,
+      "ui-teknik-mesin": true
+    }
+  },
+  "target_prodi_ids": [
+    "ui-teknik-industri",
+    "ui-teknik-elektro",
+    "ui-teknik-mesin"
+  ],
+  "strategi_demo": {
+    "SNBP": [
+      "ui-teknik-industri",
+      "ui-teknik-elektro"
+    ],
+    "SNBT": [
+      "ui-teknik-industri",
+      "ui-teknik-elektro",
+      "ui-v-akuntansi-d3"
+    ]
+  },
+  "harapan": {
+    "hasil_terverifikasi": false,
+    "terakhir_diverifikasi": null,
+    "diverifikasi_oleh": null,
+    "gate": {
+      "SNBP": "lolos",
+      "SNBT": "lolos"
+    },
+    "penilaian": {
+      "SNBP": {
+        "ui-teknik-industri": "belum_ada_acuan",
+        "ui-teknik-elektro": "belum_ada_acuan"
+      },
+      "SNBT": {
+        "ui-teknik-industri": "match",
+        "ui-teknik-elektro": "match",
+        "ui-v-akuntansi-d3": "reach"
+      }
+    }
+  }
+}

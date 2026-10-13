@@ -1,0 +1,127 @@
+# Produksi JalurKu: nginx (satu-satunya yang membuka port) -> api -> db.
+#
+# Jalankan lewat deploy/deploy.sh, atau manual dari root repositori:
+#   docker compose --env-file deploy/.env.prod -f deploy/docker-compose.prod.yml up -d --build
+#
+# Hanya nginx yang mempublikasikan port (80/443). api dan db hanya terjangkau lewat jaringan
+# "internal", sehingga tidak ada cara menembus rate limit/proxy dari luar server.
+# Nama proyek berbeda dari compose dev (jalurku) agar kontainer dan volume keduanya tidak bertabrakan.
+name: jalurku-prod
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jalurku
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?isi POSTGRES_PASSWORD di deploy/.env.prod}
+      POSTGRES_DB: jalurku
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jalurku -d jalurku"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [internal]
+    logging: *logging
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: jalurku-api:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: prod
+      DATABASE_URL: postgresql+psycopg://jalurku:${POSTGRES_PASSWORD}@db:5432/jalurku
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ADMIN_KEY: ${ADMIN_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-24}
+      REQUIRE_VERIFIED: ${REQUIRE_VERIFIED:-false}
+      # Hanya nginx (alamat tetap di bawah) yang boleh menyetel X-Forwarded-For.
+      TRUSTED_PROXIES: 172.30.0.10
+    volumes:
+      - dokumen:/srv/data/dokumen
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s   # termasuk alembic upgrade head
+    networks: [internal]
+    logging: *logging
+
+  nginx:
+    image: nginx:1.30-alpine
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "/jalurku/entrypoint.sh"]
+    environment:
+      DOMAIN: ${DOMAIN:?isi DOMAIN di deploy/.env.prod}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/entrypoint.sh:/jalurku/entrypoint.sh:ro
+      - ./nginx/templates:/jalurku/templates:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ../data/demo_statis:/srv/demo-statis:ro
+      - certs:/etc/letsencrypt:ro
+      - acme:/var/www/certbot:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      internal:
+        ipv4_address: 172.30.0.10
+    logging: *logging
+
+  # Pembaruan sertifikat otomatis. Penerbitan pertama: deploy/init-cert.sh.
+  # Tanpa sertifikat, `certbot renew` tidak melakukan apa-apa.
+  certbot:
+    image: certbot/certbot:v5.4.0
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        trap exit TERM
+        while :; do
+          certbot renew --webroot -w /var/www/certbot --quiet
+          sleep 12h & wait $${!}
+        done
+    volumes:
+      - certs:/etc/letsencrypt
+      - acme:/var/www/certbot
+    networks: [internal]
+    logging: *logging
+
+networks:
+  internal:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24   # ubah bersama TRUSTED_PROXIES dan ipv4_address nginx bila bentrok
+
+volumes:
+  dbdata:
+  dokumen:
+  certs:
+  acme:

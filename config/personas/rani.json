@@ -1,0 +1,98 @@
+{
+  "id": "rani",
+  "nama": "Rani (persona fiktif)",
+  "fiktif": true,
+  "skenario": "A",
+  "deskripsi": "Belum punya target jurusan. Suka memecahkan masalah dan teknologi. Sekolah akreditasi A di Jawa Barat, memakai e-Rapor.",
+  "profil": {
+    "tahun_lulus": 2026,
+    "provinsi": "Jawa Barat",
+    "jenjang_sekolah": "SMA",
+    "akreditasi_sekolah": "A",
+    "nilai_rapor": {
+      "semester_1": {
+        "matematika": 84,
+        "fisika": 80,
+        "kimia": 78,
+        "biologi": 82,
+        "bahasa_indonesia": 86,
+        "bahasa_inggris": 88
+      },
+      "semester_2": {
+        "matematika": 86,
+        "fisika": 82,
+        "kimia": 80,
+        "biologi": 83,
+        "bahasa_indonesia": 86,
+        "bahasa_inggris": 89
+      },
+      "semester_3": {
+        "matematika": 88,
+        "fisika": 85,
+        "kimia": 81,
+        "biologi": 84,
+        "bahasa_indonesia": 87,
+        "bahasa_inggris": 90
+      },
+      "semester_4": {
+        "matematika": 90,
+        "fisika": 86,
+        "kimia": 82,
+        "biologi": 84,
+        "bahasa_indonesia": 87,
+        "bahasa_inggris": 90
+      },
+      "semester_5": {
+        "matematika": 91,
+        "fisika": 88,
+        "kimia": 83,
+        "biologi": 85,
+        "bahasa_indonesia": 88,
+        "bahasa_inggris": 91
+      }
+    },
+    "minat": {
+      "realistis": 0.6,
+      "investigatif": 0.85,
+      "artistik": 0.3,
+      "sosial": 0.4,
+      "enterprising": 0.35,
+      "konvensional": 0.5
+    },
+    "peringkat_sekolah": 12,
+    "jumlah_siswa_angkatan": 300,
+    "alumni_info": {},
+    "punya_nilai_tka": true,
+    "sekolah_punya_npsn": true,
+    "sekolah_kurikulum_nasional": true,
+    "pakai_erapor": true,
+    "rapor_lengkap_di_pdss": true,
+    "wni_punya_nik": true,
+    "lulus_snbp_3_tahun_terakhir": false,
+    "sudah_ikut_utbk_tahun_siklus": false,
+    "konfirmasi_syarat_prodi": {}
+  },
+  "strategi_demo": {
+    "SNBT": [
+      "ui-ilmu-komputer",
+      "ui-teknik-industri",
+      "ui-v-akuntansi-d3"
+    ]
+  },
+  "harapan": {
+    "hasil_terverifikasi": false,
+    "terakhir_diverifikasi": null,
+    "diverifikasi_oleh": null,
+    "gate": {
+      "SNBP": "lolos",
+      "SNBT": "lolos"
+    },
+    "penilaian": {
+      "SNBT": {
+        "ui-ilmu-komputer": "safe",
+        "ui-teknik-industri": "safe",
+        "ui-v-akuntansi-d3": "reach"
+      }
+    }
+  }
+}

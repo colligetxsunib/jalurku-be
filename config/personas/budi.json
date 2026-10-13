@@ -1,0 +1,66 @@
+{
+  "id": "budi",
+  "nama": "Budi (persona fiktif)",
+  "fiktif": true,
+  "skenario": "tepi",
+  "deskripsi": "Lulusan 2023 melewati batas tahun SNBT. Sekolah akreditasi C, peringkat jauh di luar kuota SNBP, dan belum punya nilai TKA (data_kurang tertutup oleh gagal).",
+  "profil": {
+    "tahun_lulus": 2023,
+    "provinsi": "Jawa Barat",
+    "jenjang_sekolah": "SMA",
+    "akreditasi_sekolah": "C",
+    "nilai_rapor": {
+      "semester_1": {
+        "matematika": 70,
+        "bahasa_indonesia": 72
+      },
+      "semester_2": {
+        "matematika": 71,
+        "bahasa_indonesia": 72
+      },
+      "semester_3": {
+        "matematika": 70,
+        "bahasa_indonesia": 73
+      },
+      "semester_4": {
+        "matematika": 72,
+        "bahasa_indonesia": 73
+      },
+      "semester_5": {
+        "matematika": 72,
+        "bahasa_indonesia": 74
+      }
+    },
+    "peringkat_sekolah": 40,
+    "jumlah_siswa_angkatan": 100,
+    "punya_nilai_tka": null,
+    "sekolah_punya_npsn": true,
+    "sekolah_kurikulum_nasional": true,
+    "pakai_erapor": false,
+    "rapor_lengkap_di_pdss": true,
+    "wni_punya_nik": true,
+    "lulus_snbp_3_tahun_terakhir": false,
+    "sudah_ikut_utbk_tahun_siklus": false
+  },
+  "strategi_demo": {
+    "SNBT": [
+      "ui-akuntansi",
+      "ui-v-akuntansi-d3"
+    ]
+  },
+  "harapan": {
+    "hasil_terverifikasi": false,
+    "terakhir_diverifikasi": null,
+    "diverifikasi_oleh": null,
+    "gate": {
+      "SNBP": "tidak_memenuhi_syarat",
+      "SNBT": "tidak_memenuhi_syarat"
+    },
+    "penilaian": {
+      "SNBT": {
+        "ui-akuntansi": "tanpa_penilaian",
+        "ui-v-akuntansi-d3": "tanpa_penilaian"
+      }
+    }
+  }
+}

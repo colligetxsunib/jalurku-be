@@ -1,0 +1,19 @@
+# Mode HTTP: dipilih otomatis oleh entrypoint.sh selama sertifikat untuk ${DOMAIN} belum ada
+# (bootstrap sebelum deploy/init-cert.sh, atau uji lokal dengan DOMAIN=localhost).
+# PERINGATAN: lalu lintas TIDAK terenkripsi (token sesi terlihat di jaringan). Jangan dipakai
+# untuk demo publik; jalankan deploy/init-cert.sh agar nginx berpindah ke mode HTTPS.
+include /etc/nginx/snippets/http-global.conf;
+
+include /etc/nginx/snippets/default-server.conf;
+
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        default_type text/plain;
+    }
+
+    include /etc/nginx/snippets/app.conf;
+}

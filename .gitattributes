@@ -1,0 +1,4 @@
+# Skrip dan konfigurasi yang dijalankan di Linux harus berakhiran baris LF (checkout Windows tidak boleh mengubahnya).
+*.sh text eol=lf
+deploy/nginx/** text eol=lf
+Dockerfile text eol=lf

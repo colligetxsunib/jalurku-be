@@ -1,0 +1,35 @@
+{
+  "id": "sinta",
+  "nama": "Sinta (persona fiktif)",
+  "fiktif": true,
+  "skenario": "data_kurang",
+  "deskripsi": "Baru mengisi sebagian profil. Gate tidak boleh menebak: hasilnya data_kurang beserta pertanyaan.",
+  "profil": {
+    "tahun_lulus": 2026,
+    "provinsi": "Jawa Barat",
+    "jenjang_sekolah": "SMA",
+    "akreditasi_sekolah": "B",
+    "sekolah_punya_npsn": true
+  },
+  "strategi_demo": {
+    "SNBT": [
+      "ui-akuntansi",
+      "ui-v-akuntansi-d3"
+    ]
+  },
+  "harapan": {
+    "hasil_terverifikasi": false,
+    "terakhir_diverifikasi": null,
+    "diverifikasi_oleh": null,
+    "gate": {
+      "SNBP": "data_kurang",
+      "SNBT": "data_kurang"
+    },
+    "penilaian": {
+      "SNBT": {
+        "ui-akuntansi": "tanpa_penilaian",
+        "ui-v-akuntansi-d3": "tanpa_penilaian"
+      }
+    }
+  }
+}
