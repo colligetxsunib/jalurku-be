@@ -158,9 +158,10 @@ data/
   seed/          CSV data resmi dan katalog (milik tim data)
   dokumen/       PDF sumber RAG (diunduh manual, tidak masuk repo)
   demo_statis/   halaman HTML ekspor persona fiktif
+api-collection/  Postman Collection v2.1 + environment (dihasilkan scripts/build_api_collection.py)
 deploy/          docker compose produksi, nginx, skrip deploy dan sertifikat
 scripts/         CLI: ingest, ingest_docs, check_verified, run_golden_set, smoke_test, ...
-tests/           pytest (831 tes), golden_gate/, golden_rag/
+tests/           pytest (845 tes), golden_gate/, golden_rag/
 ```
 
 Aturan penting kode: `app/domain/` tidak boleh meng-import LLM, RAG, SQLAlchemy, atau FastAPI (dijaga tes). Hanya `app/llm/client.py` yang boleh meng-import SDK Google (dijaga tes).
@@ -202,6 +203,7 @@ Perintah berguna:
 | Muat sebagian data | `uv run python -m scripts.ingest --tipe katalog acuan` |
 | Coba gate dari terminal (tanpa DB) | `uv run python -m scripts.try_gate config/personas/budi.json SNBT` |
 | Cek kunci Gemini dan model | `uv run python -m scripts.check_gemini` |
+| Bangun ulang API collection | `uv run python -m scripts.build_api_collection` |
 | Buat sesi persona untuk uji manual | `uv run python -m scripts.seed_personas --persona rani --simpan-strategi` |
 
 ---
@@ -270,6 +272,37 @@ Potongan respons `/analyze` (diringkas):
   "data_kurang": [], "catatan": []
 }]}
 ```
+
+### API Collection (Postman, Insomnia, Bruno, Thunder Client)
+
+Koleksi siap pakai ada di [`api-collection/`](api-collection/) dalam format Postman Collection v2.1, yang juga bisa diimpor Insomnia, Bruno, dan Thunder Client.
+
+| Berkas | Isi |
+|---|---|
+| `JalurKu.postman_collection.json` | 60 request dengan deskripsi, contoh bodi dari persona, dan skrip uji otomatis |
+| `JalurKu.lokal.postman_environment.json` | `baseUrl = http://localhost:8000` |
+| `JalurKu.produksi.postman_environment.json` | `baseUrl = //Not Deployed Yet`|
+
+Cara memakai:
+
+1. Impor koleksi dan satu environment, lalu pilih environment itu di pojok kanan atas.
+2. Isi `adminKey` (bertipe secret) hanya bila ingin mencoba folder **10 Admin**.
+3. Jalankan folder **00 Alur lengkap** lewat Collection Runner. Folder ini membuat sesi sendiri dan menghapusnya di akhir. Atau klik **02 Sesi > Buat sesi (consent)** untuk request satuan.
+
+Skrip uji pada *Buat sesi* menyimpan token ke variabel koleksi `token`, dan semua request lain memakainya lewat otorisasi Bearer koleksi. Skrip uji pada *Simpan strategi* menyimpan `strategy_id` ke `strategyId`. Variabel `prodiId`, `dokumenId`, dan `consentVersion` bisa diubah.
+
+Isi folder: dua alur lengkap (**A** Rani belum punya target, **B** Dimas sudah punya target), lalu satu folder per modul (Kesehatan, Sesi, Profil, Katalog, Eksplorasi, Analisis, Strategi, Ringkasan, Tanya jawab, Admin), **Kasus gagal** (400, 401, 404, 422), dan **Akhiri sesi**. Setiap request punya uji status dan kunci respons, dan sebagian memeriksa temuan atau nilai `yakin`.
+
+Koleksi **dihasilkan dari kode**, jangan diedit tangan. Bodi persona diambil dari `config/personas`, jadi tetap sinkron dengan data demo.
+
+```bash
+uv run python -m scripts.build_api_collection          # tulis ulang api-collection/
+uv run python -m scripts.build_api_collection --cek    # gagal bila berkas di repo sudah usang
+```
+
+`tests/test_api_collection.py` menjaga agar koleksi tidak usang: setiap endpoint di OpenAPI wajib ada di koleksi (dan sebaliknya), semua variabel terdefinisi, dan seluruh alur koleksi diputar ulang terhadap API sungguhan dengan status dan kunci respons yang dideklarasikan. Menambah endpoint tanpa memperbarui koleksi akan membuat tes gagal.
+
+Catatan: request unggah PDF (`10 Admin > Unggah PDF sumber RAG`) membutuhkan Anda memilih berkas sendiri, jadi tidak ikut diputar ulang oleh tes.
 
 ### Persona demo
 
@@ -521,7 +554,7 @@ Saat `deploy.sh` jalan dengan `REQUIRE_VERIFIED=true` dan data belum bertanggal,
 
 ```bash
 docker compose up -d db
-uv run pytest            # 831 tes. Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
+uv run pytest            # 845 tes. Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
 ```
 
 Tidak ada tes yang memanggil Gemini asli: LLM diganti `FakeLLM` (`tests/fakes.py`).

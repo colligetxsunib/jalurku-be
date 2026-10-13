@@ -1,0 +1,2976 @@
+{
+  "info": {
+    "_postman_id": "4cd30635-9b35-5558-8043-6ef7ed3d458f",
+    "name": "JalurKu API",
+    "description": "API JalurKu (backend SNBP dan SNBT). Dibuat otomatis oleh `scripts/build_api_collection.py`, jangan diedit tangan.\n\n**Mulai cepat**\n1. Impor koleksi ini dan salah satu environment (Lokal atau Produksi), lalu pilih environment itu.\n2. Isi `baseUrl` (dan `adminKey` bila perlu) di environment.\n3. Jalankan folder **00 Alur lengkap** dengan Collection Runner, atau mulai dari **02 Sesi > Buat sesi** untuk request satuan.\n\n**Variabel**\n- Environment: `baseUrl`, `adminKey`.\n- Koleksi (diisi otomatis oleh skrip uji): `token`, `strategyId`. Bisa diubah: `prodiId`, `dokumenId`, `consentVersion`.\n\nSemua kategori reach/match/safe bersifat **indikatif**. Persona selalu fiktif.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "strategyId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "prodiId",
+      "value": "ui-ilmu-komputer",
+      "type": "string"
+    },
+    {
+      "key": "dokumenId",
+      "value": "snpmb-paparan-2026",
+      "type": "string"
+    },
+    {
+      "key": "consentVersion",
+      "value": "2026-10-13",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Alur lengkap: Skenario A (belum punya target, Rani)",
+      "description": "Alur eksplorasi: sesi, profil Rani, rekomendasi rumpun beserta kelayakannya, katalog, analisis kandidat, simpan strategi, ringkasan, penjelasan, hapus data. Mandiri seperti Skenario B.",
+      "item": [
+        {
+          "name": "1. Buat sesi (consent)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat token, expires_at, sisa_detik\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\"); });",
+                  "pm.collectionVariables.set(\"token\", j.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consent\": true,\n  \"consent_version\": \"{{consentVersion}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam)."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Simpan profil: Rani (belum punya target)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tahun_lulus\": 2026,\n  \"provinsi\": \"Jawa Barat\",\n  \"jenjang_sekolah\": \"SMA\",\n  \"akreditasi_sekolah\": \"A\",\n  \"nilai_rapor\": {\n    \"semester_1\": {\n      \"matematika\": 84,\n      \"fisika\": 80,\n      \"kimia\": 78,\n      \"biologi\": 82,\n      \"bahasa_indonesia\": 86,\n      \"bahasa_inggris\": 88\n    },\n    \"semester_2\": {\n      \"matematika\": 86,\n      \"fisika\": 82,\n      \"kimia\": 80,\n      \"biologi\": 83,\n      \"bahasa_indonesia\": 86,\n      \"bahasa_inggris\": 89\n    },\n    \"semester_3\": {\n      \"matematika\": 88,\n      \"fisika\": 85,\n      \"kimia\": 81,\n      \"biologi\": 84,\n      \"bahasa_indonesia\": 87,\n      \"bahasa_inggris\": 90\n    },\n    \"semester_4\": {\n      \"matematika\": 90,\n      \"fisika\": 86,\n      \"kimia\": 82,\n      \"biologi\": 84,\n      \"bahasa_indonesia\": 87,\n      \"bahasa_inggris\": 90\n    },\n    \"semester_5\": {\n      \"matematika\": 91,\n      \"fisika\": 88,\n      \"kimia\": 83,\n      \"biologi\": 85,\n      \"bahasa_indonesia\": 88,\n      \"bahasa_inggris\": 91\n    }\n  },\n  \"minat\": {\n    \"realistis\": 0.6,\n    \"investigatif\": 0.85,\n    \"artistik\": 0.3,\n    \"sosial\": 0.4,\n    \"enterprising\": 0.35,\n    \"konvensional\": 0.5\n  },\n  \"peringkat_sekolah\": 12,\n  \"jumlah_siswa_angkatan\": 300,\n  \"alumni_info\": {},\n  \"punya_nilai_tka\": true,\n  \"sekolah_punya_npsn\": true,\n  \"sekolah_kurikulum_nasional\": true,\n  \"pakai_erapor\": true,\n  \"rapor_lengkap_di_pdss\": true,\n  \"wni_punya_nik\": true,\n  \"lulus_snbp_3_tahun_terakhir\": false,\n  \"sudah_ikut_utbk_tahun_siklus\": false,\n  \"konfirmasi_syarat_prodi\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Belum punya target jurusan. Suka memecahkan masalah dan teknologi. Sekolah akreditasi A di Jawa Barat, memakai e-Rapor.\n\nPersona fiktif `rani` dari `config/personas/rani.json`.\n\nPUT bersifat parsial: field yang tidak dikirim tidak berubah, `null` menghapus nilai. Respons memuat `data_kurang` per jalur dan `pertanyaan` yang bisa langsung ditampilkan ke siswa."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Rekomendasi rumpun + kelayakan SNBT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat rekomendasi, jalur\", function () { pm.expect(j).to.include.keys(\"rekomendasi\", \"jalur\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/explore",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "explore"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"top_n\": 3,\n  \"jalur\": \"SNBT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sama seperti di atas, ditambah `kelayakan` per rumpun: ringkasan gate dan kategori reach/match/safe dari mesin yang sama dengan `/analyze`."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Daftar prodi vokasi UI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat items, total\", function () { pm.expect(j).to.include.keys(\"items\", \"total\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/prodi?ptn_id=ui&program=vokasi&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "prodi"
+              ],
+              "query": [
+                {
+                  "key": "ptn_id",
+                  "value": "ui"
+                },
+                {
+                  "key": "program",
+                  "value": "vokasi"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Contoh filter `program=vokasi` untuk melengkapi komposisi pilihan SNBT."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Analisis satu target",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil\", function () { pm.expect(j).to.include.keys(\"hasil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": [\n    {\n      \"prodi_id\": \"{{prodiId}}\",\n      \"jalur\": [\n        \"SNBT\"\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Gate lalu penilaian untuk satu prodi di satu jalur. Penilaian `null` bila gate tidak lolos."
+          },
+          "response": []
+        },
+        {
+          "name": "6. Simpan strategi SNBT (Rani)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat strategy_id, disimpan\", function () { pm.expect(j).to.include.keys(\"strategy_id\", \"disimpan\"); });",
+                  "pm.collectionVariables.set(\"strategyId\", j.strategy_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBT\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-ilmu-komputer\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-v-akuntansi-d3\"\n    }\n  ],\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Pilihan SNBT untuk persona Rani: 2 Sarjana + 1 D3."
+          },
+          "response": []
+        },
+        {
+          "name": "7. Ringkasan (strategi tersimpan terbaru)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat pilihan_akhir, fokus_persiapan, dokumen_syarat, narasi, narasi_fallback\", function () { pm.expect(j).to.include.keys(\"pilihan_akhir\", \"fokus_persiapan\", \"dokumen_syarat\", \"narasi\", \"narasi_fallback\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "summary"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Ringkasan siap cetak dari strategi tersimpan terbaru per jalur. Butuh minimal satu strategi yang disimpan (404 `strategi_belum_disimpan` bila belum). Tidak ada tautan publik."
+          },
+          "response": []
+        },
+        {
+          "name": "8. Kenapa hasilnya begitu? (mode jelaskan)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "query"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pertanyaan\": \"Kenapa hasilnya begitu?\",\n  \"mode\": \"jelaskan\",\n  \"konteks\": {\n    \"prodi_id\": \"ui-teknik-industri\",\n    \"jalur\": \"SNBT\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Tombol \"Kenapa?\". `konteks.prodi_id` dan `konteks.jalur` wajib. Server menghitung ulang analisis, LLM hanya menjelaskan fakta itu. Tanpa LLM, dipakai teks cadangan."
+          },
+          "response": []
+        },
+        {
+          "name": "9. Hapus data saya",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "description": "Menghapus sesi beserta seluruh data turunannya (profil, strategi, log pertanyaan). Token tidak berlaku lagi setelah ini, jadi buat sesi baru bila ingin lanjut."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "00 Alur lengkap: Skenario B (sudah punya target, Dimas)",
+      "description": "Jalankan seluruh folder ini berurutan (Collection Runner atau Run folder). Alur: sesi, profil, katalog, analisis, what-if, strategi, simpan, ringkasan, tanya-jawab, hapus data. Mandiri: membuat sesi sendiri dan menghapusnya di akhir.",
+      "item": [
+        {
+          "name": "1. Buat sesi (consent)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat token, expires_at, sisa_detik\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\"); });",
+                  "pm.collectionVariables.set(\"token\", j.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consent\": true,\n  \"consent_version\": \"{{consentVersion}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam)."
+          },
+          "response": []
+        },
+        {
+          "name": "2. Simpan profil: Dimas (sudah punya target)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tahun_lulus\": 2026,\n  \"provinsi\": \"Jawa Barat\",\n  \"jenjang_sekolah\": \"SMA\",\n  \"akreditasi_sekolah\": \"B\",\n  \"nilai_rapor\": {\n    \"semester_1\": {\n      \"matematika\": 78,\n      \"fisika\": 76,\n      \"kimia\": 74,\n      \"bahasa_indonesia\": 80,\n      \"bahasa_inggris\": 79\n    },\n    \"semester_2\": {\n      \"matematika\": 80,\n      \"fisika\": 77,\n      \"kimia\": 75,\n      \"bahasa_indonesia\": 80,\n      \"bahasa_inggris\": 80\n    },\n    \"semester_3\": {\n      \"matematika\": 82,\n      \"fisika\": 79,\n      \"kimia\": 76,\n      \"bahasa_indonesia\": 81,\n      \"bahasa_inggris\": 80\n    },\n    \"semester_4\": {\n      \"matematika\": 83,\n      \"fisika\": 80,\n      \"kimia\": 77,\n      \"bahasa_indonesia\": 81,\n      \"bahasa_inggris\": 81\n    },\n    \"semester_5\": {\n      \"matematika\": 84,\n      \"fisika\": 82,\n      \"kimia\": 78,\n      \"bahasa_indonesia\": 82,\n      \"bahasa_inggris\": 82\n    }\n  },\n  \"minat\": {\n    \"realistis\": 0.8,\n    \"investigatif\": 0.7,\n    \"artistik\": 0.2,\n    \"sosial\": 0.3,\n    \"enterprising\": 0.4,\n    \"konvensional\": 0.5\n  },\n  \"peringkat_sekolah\": 30,\n  \"jumlah_siswa_angkatan\": 120,\n  \"alumni_info\": {\n    \"ui-teknik-industri\": \"tidak_tahu\"\n  },\n  \"punya_nilai_tka\": true,\n  \"sekolah_punya_npsn\": true,\n  \"sekolah_kurikulum_nasional\": true,\n  \"pakai_erapor\": false,\n  \"rapor_lengkap_di_pdss\": true,\n  \"wni_punya_nik\": true,\n  \"lulus_snbp_3_tahun_terakhir\": false,\n  \"sudah_ikut_utbk_tahun_siklus\": false,\n  \"konfirmasi_syarat_prodi\": {\n    \"ui-teknik-industri\": true,\n    \"ui-teknik-elektro\": true,\n    \"ui-teknik-mesin\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sudah punya target: prodi teknik di UI. Sekolah akreditasi B tanpa e-Rapor, peringkat tepat di batas kuota 25 persen siswa.\n\nPersona fiktif `dimas` dari `config/personas/dimas.json`.\n\nPUT bersifat parsial: field yang tidak dikirim tidak berubah, `null` menghapus nilai. Respons memuat `data_kurang` per jalur dan `pertanyaan` yang bisa langsung ditampilkan ke siswa."
+          },
+          "response": []
+        },
+        {
+          "name": "3. Baca profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "description": "Profil tersimpan beserta `data_kurang` dan pertanyaannya."
+          },
+          "response": []
+        },
+        {
+          "name": "4. Daftar prodi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat items, total\", function () { pm.expect(j).to.include.keys(\"items\", \"total\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/prodi?rumpun=Teknik&program=akademik&page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "prodi"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "komputer",
+                  "disabled": true
+                },
+                {
+                  "key": "rumpun",
+                  "value": "Teknik"
+                },
+                {
+                  "key": "provinsi",
+                  "value": "Jawa Barat",
+                  "disabled": true
+                },
+                {
+                  "key": "jalur",
+                  "value": "SNBT",
+                  "disabled": true
+                },
+                {
+                  "key": "ptn_id",
+                  "value": "ui",
+                  "disabled": true
+                },
+                {
+                  "key": "program",
+                  "value": "akademik"
+                },
+                {
+                  "key": "jenjang",
+                  "value": "S1",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Pencarian prodi. Filter: `q`, `rumpun`, `provinsi`, `jalur` (SNBP/SNBT), `ptn_id`, `program` (akademik/vokasi), `jenjang` (S1/D3/D4). Aktifkan filter lain di tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "5. Analisis tiga target, dua jalur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil\", function () { pm.expect(j).to.include.keys(\"hasil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\",\n      \"jalur\": [\n        \"SNBP\",\n        \"SNBT\"\n      ]\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\",\n      \"jalur\": [\n        \"SNBP\",\n        \"SNBT\"\n      ]\n    },\n    {\n      \"prodi_id\": \"ui-teknik-mesin\",\n      \"jalur\": [\n        \"SNBP\",\n        \"SNBT\"\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Persona Dimas: tiga prodi teknik UI di SNBP dan SNBT sekaligus (6 hasil). SNBP butuh `konfirmasi_syarat_prodi` yang sudah ada di profil Dimas."
+          },
+          "response": []
+        },
+        {
+          "name": "6. What-if: peringkat satu tingkat di luar kuota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil\", function () { pm.expect(j).to.include.keys(\"hasil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\",\n      \"jalur\": [\n        \"SNBP\"\n      ]\n    }\n  ],\n  \"override\": {\n    \"peringkat_sekolah\": 31\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "`override` menghitung ulang tanpa menyimpan apa pun. Dengan peringkat 31 dari 120 (25,83 persen) SNBP akreditasi B tanpa e-Rapor gugur karena kuota sekolah 25 persen; profil tersimpan tidak berubah."
+          },
+          "response": []
+        },
+        {
+          "name": "7. Evaluasi komposisi SNBT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil, komposisi, temuan, disimpan\", function () { pm.expect(j).to.include.keys(\"hasil\", \"komposisi\", \"temuan\", \"disimpan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBT\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    },\n    {\n      \"prodi_id\": \"ui-v-akuntansi-d3\"\n    }\n  ],\n  \"shortlist\": [\n    \"ui-v-fisioterapi\",\n    \"ui-teknik-mesin\"\n  ],\n  \"simpan\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Mengevaluasi pilihan SNBT tanpa menyimpan: komposisi, temuan (pelanggaran/peringatan/info), dan saran swap dari `shortlist`."
+          },
+          "response": []
+        },
+        {
+          "name": "8. Simpan strategi SNBP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat strategy_id, disimpan\", function () { pm.expect(j).to.include.keys(\"strategy_id\", \"disimpan\"); });",
+                  "pm.collectionVariables.set(\"strategyId\", j.strategy_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBP\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    }\n  ],\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Menyimpan pilihan SNBP (maks 2) agar dipakai `/summary`."
+          },
+          "response": []
+        },
+        {
+          "name": "9. Simpan strategi SNBT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat strategy_id, disimpan\", function () { pm.expect(j).to.include.keys(\"strategy_id\", \"disimpan\"); });",
+                  "pm.collectionVariables.set(\"strategyId\", j.strategy_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBT\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    },\n    {\n      \"prodi_id\": \"ui-v-akuntansi-d3\"\n    }\n  ],\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Menyimpan pilihan SNBT (2 Sarjana + 1 D3). `strategy_id` disimpan ke variabel `strategyId`."
+          },
+          "response": []
+        },
+        {
+          "name": "10. Ringkasan (strategi tersimpan terbaru)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat pilihan_akhir, fokus_persiapan, dokumen_syarat, narasi, narasi_fallback\", function () { pm.expect(j).to.include.keys(\"pilihan_akhir\", \"fokus_persiapan\", \"dokumen_syarat\", \"narasi\", \"narasi_fallback\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "summary"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Ringkasan siap cetak dari strategi tersimpan terbaru per jalur. Butuh minimal satu strategi yang disimpan (404 `strategi_belum_disimpan` bila belum). Tidak ada tautan publik."
+          },
+          "response": []
+        },
+        {
+          "name": "11. Tanya keputusan (dijawab mesin aturan)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "query"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pertanyaan\": \"Apakah saya lolos syarat SNBP?\",\n  \"mode\": \"tanya\",\n  \"konteks\": {\n    \"prodi_id\": \"ui-teknik-industri\",\n    \"jalur\": \"SNBP\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Pertanyaan keputusan pribadi dijawab mesin aturan, bukan LLM. Sertakan `konteks` agar bisa dihitung; tanpa konteks, respons meminta `konteks.prodi_id` dan `konteks.jalur`."
+          },
+          "response": []
+        },
+        {
+          "name": "12. Hapus data saya",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "description": "Menghapus sesi beserta seluruh data turunannya (profil, strategi, log pertanyaan). Token tidak berlaku lagi setelah ini, jadi buat sesi baru bila ingin lanjut."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 Kesehatan",
+      "description": "Cek hidup layanan.",
+      "item": [
+        {
+          "name": "Cek kesehatan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat status\", function () { pm.expect(j).to.include.keys(\"status\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Memeriksa koneksi database saja (tidak memanggil LLM). Tidak butuh token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Sesi",
+      "description": "Mulai dari sini untuk request satuan: **Buat sesi** menyimpan token ke variabel `token`.",
+      "item": [
+        {
+          "name": "Buat sesi (consent)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat token, expires_at, sisa_detik\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\"); });",
+                  "pm.collectionVariables.set(\"token\", j.token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consent\": true,\n  \"consent_version\": \"{{consentVersion}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam)."
+          },
+          "response": []
+        },
+        {
+          "name": "Status sesi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat sisa_detik, expires_at\", function () { pm.expect(j).to.include.keys(\"sisa_detik\", \"expires_at\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "description": "Waktu dibuat, consent, dan sisa detik sebelum sesi kedaluwarsa."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Profil",
+      "description": "Empat persona fiktif dan contoh pembaruan parsial. Profil terakhir yang dikirim digabung dengan yang sebelumnya (shallow merge), jadi buat sesi baru untuk mulai bersih.",
+      "item": [
+        {
+          "name": "Simpan profil: Dimas (sudah punya target)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tahun_lulus\": 2026,\n  \"provinsi\": \"Jawa Barat\",\n  \"jenjang_sekolah\": \"SMA\",\n  \"akreditasi_sekolah\": \"B\",\n  \"nilai_rapor\": {\n    \"semester_1\": {\n      \"matematika\": 78,\n      \"fisika\": 76,\n      \"kimia\": 74,\n      \"bahasa_indonesia\": 80,\n      \"bahasa_inggris\": 79\n    },\n    \"semester_2\": {\n      \"matematika\": 80,\n      \"fisika\": 77,\n      \"kimia\": 75,\n      \"bahasa_indonesia\": 80,\n      \"bahasa_inggris\": 80\n    },\n    \"semester_3\": {\n      \"matematika\": 82,\n      \"fisika\": 79,\n      \"kimia\": 76,\n      \"bahasa_indonesia\": 81,\n      \"bahasa_inggris\": 80\n    },\n    \"semester_4\": {\n      \"matematika\": 83,\n      \"fisika\": 80,\n      \"kimia\": 77,\n      \"bahasa_indonesia\": 81,\n      \"bahasa_inggris\": 81\n    },\n    \"semester_5\": {\n      \"matematika\": 84,\n      \"fisika\": 82,\n      \"kimia\": 78,\n      \"bahasa_indonesia\": 82,\n      \"bahasa_inggris\": 82\n    }\n  },\n  \"minat\": {\n    \"realistis\": 0.8,\n    \"investigatif\": 0.7,\n    \"artistik\": 0.2,\n    \"sosial\": 0.3,\n    \"enterprising\": 0.4,\n    \"konvensional\": 0.5\n  },\n  \"peringkat_sekolah\": 30,\n  \"jumlah_siswa_angkatan\": 120,\n  \"alumni_info\": {\n    \"ui-teknik-industri\": \"tidak_tahu\"\n  },\n  \"punya_nilai_tka\": true,\n  \"sekolah_punya_npsn\": true,\n  \"sekolah_kurikulum_nasional\": true,\n  \"pakai_erapor\": false,\n  \"rapor_lengkap_di_pdss\": true,\n  \"wni_punya_nik\": true,\n  \"lulus_snbp_3_tahun_terakhir\": false,\n  \"sudah_ikut_utbk_tahun_siklus\": false,\n  \"konfirmasi_syarat_prodi\": {\n    \"ui-teknik-industri\": true,\n    \"ui-teknik-elektro\": true,\n    \"ui-teknik-mesin\": true\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sudah punya target: prodi teknik di UI. Sekolah akreditasi B tanpa e-Rapor, peringkat tepat di batas kuota 25 persen siswa.\n\nPersona fiktif `dimas` dari `config/personas/dimas.json`.\n\nPUT bersifat parsial: field yang tidak dikirim tidak berubah, `null` menghapus nilai. Respons memuat `data_kurang` per jalur dan `pertanyaan` yang bisa langsung ditampilkan ke siswa."
+          },
+          "response": []
+        },
+        {
+          "name": "Simpan profil: Rani (belum punya target)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tahun_lulus\": 2026,\n  \"provinsi\": \"Jawa Barat\",\n  \"jenjang_sekolah\": \"SMA\",\n  \"akreditasi_sekolah\": \"A\",\n  \"nilai_rapor\": {\n    \"semester_1\": {\n      \"matematika\": 84,\n      \"fisika\": 80,\n      \"kimia\": 78,\n      \"biologi\": 82,\n      \"bahasa_indonesia\": 86,\n      \"bahasa_inggris\": 88\n    },\n    \"semester_2\": {\n      \"matematika\": 86,\n      \"fisika\": 82,\n      \"kimia\": 80,\n      \"biologi\": 83,\n      \"bahasa_indonesia\": 86,\n      \"bahasa_inggris\": 89\n    },\n    \"semester_3\": {\n      \"matematika\": 88,\n      \"fisika\": 85,\n      \"kimia\": 81,\n      \"biologi\": 84,\n      \"bahasa_indonesia\": 87,\n      \"bahasa_inggris\": 90\n    },\n    \"semester_4\": {\n      \"matematika\": 90,\n      \"fisika\": 86,\n      \"kimia\": 82,\n      \"biologi\": 84,\n      \"bahasa_indonesia\": 87,\n      \"bahasa_inggris\": 90\n    },\n    \"semester_5\": {\n      \"matematika\": 91,\n      \"fisika\": 88,\n      \"kimia\": 83,\n      \"biologi\": 85,\n      \"bahasa_indonesia\": 88,\n      \"bahasa_inggris\": 91\n    }\n  },\n  \"minat\": {\n    \"realistis\": 0.6,\n    \"investigatif\": 0.85,\n    \"artistik\": 0.3,\n    \"sosial\": 0.4,\n    \"enterprising\": 0.35,\n    \"konvensional\": 0.5\n  },\n  \"peringkat_sekolah\": 12,\n  \"jumlah_siswa_angkatan\": 300,\n  \"alumni_info\": {},\n  \"punya_nilai_tka\": true,\n  \"sekolah_punya_npsn\": true,\n  \"sekolah_kurikulum_nasional\": true,\n  \"pakai_erapor\": true,\n  \"rapor_lengkap_di_pdss\": true,\n  \"wni_punya_nik\": true,\n  \"lulus_snbp_3_tahun_terakhir\": false,\n  \"sudah_ikut_utbk_tahun_siklus\": false,\n  \"konfirmasi_syarat_prodi\": {}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Belum punya target jurusan. Suka memecahkan masalah dan teknologi. Sekolah akreditasi A di Jawa Barat, memakai e-Rapor.\n\nPersona fiktif `rani` dari `config/personas/rani.json`.\n\nPUT bersifat parsial: field yang tidak dikirim tidak berubah, `null` menghapus nilai. Respons memuat `data_kurang` per jalur dan `pertanyaan` yang bisa langsung ditampilkan ke siswa."
+          },
+          "response": []
+        },
+        {
+          "name": "Simpan profil: Budi (lulusan 2023, SNBT gugur)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tahun_lulus\": 2023,\n  \"provinsi\": \"Jawa Barat\",\n  \"jenjang_sekolah\": \"SMA\",\n  \"akreditasi_sekolah\": \"C\",\n  \"nilai_rapor\": {\n    \"semester_1\": {\n      \"matematika\": 70,\n      \"bahasa_indonesia\": 72\n    },\n    \"semester_2\": {\n      \"matematika\": 71,\n      \"bahasa_indonesia\": 72\n    },\n    \"semester_3\": {\n      \"matematika\": 70,\n      \"bahasa_indonesia\": 73\n    },\n    \"semester_4\": {\n      \"matematika\": 72,\n      \"bahasa_indonesia\": 73\n    },\n    \"semester_5\": {\n      \"matematika\": 72,\n      \"bahasa_indonesia\": 74\n    }\n  },\n  \"peringkat_sekolah\": 40,\n  \"jumlah_siswa_angkatan\": 100,\n  \"punya_nilai_tka\": null,\n  \"sekolah_punya_npsn\": true,\n  \"sekolah_kurikulum_nasional\": true,\n  \"pakai_erapor\": false,\n  \"rapor_lengkap_di_pdss\": true,\n  \"wni_punya_nik\": true,\n  \"lulus_snbp_3_tahun_terakhir\": false,\n  \"sudah_ikut_utbk_tahun_siklus\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Lulusan 2023 melewati batas tahun SNBT. Sekolah akreditasi C, peringkat jauh di luar kuota SNBP, dan belum punya nilai TKA (data_kurang tertutup oleh gagal).\n\nPersona fiktif `budi` dari `config/personas/budi.json`.\n\nPUT bersifat parsial: field yang tidak dikirim tidak berubah, `null` menghapus nilai. Respons memuat `data_kurang` per jalur dan `pertanyaan` yang bisa langsung ditampilkan ke siswa."
+          },
+          "response": []
+        },
+        {
+          "name": "Simpan profil: Sinta (data sebagian, data_kurang)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tahun_lulus\": 2026,\n  \"provinsi\": \"Jawa Barat\",\n  \"jenjang_sekolah\": \"SMA\",\n  \"akreditasi_sekolah\": \"B\",\n  \"sekolah_punya_npsn\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Baru mengisi sebagian profil. Gate tidak boleh menebak: hasilnya data_kurang beserta pertanyaan.\n\nPersona fiktif `sinta` dari `config/personas/sinta.json`.\n\nPUT bersifat parsial: field yang tidak dikirim tidak berubah, `null` menghapus nilai. Respons memuat `data_kurang` per jalur dan `pertanyaan` yang bisa langsung ditampilkan ke siswa."
+          },
+          "response": []
+        },
+        {
+          "name": "Baca profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil, data_kurang, pertanyaan\", function () { pm.expect(j).to.include.keys(\"profil\", \"data_kurang\", \"pertanyaan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "description": "Profil tersimpan beserta `data_kurang` dan pertanyaannya."
+          },
+          "response": []
+        },
+        {
+          "name": "Ubah sebagian profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil\", function () { pm.expect(j).to.include.keys(\"profil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"peringkat_sekolah\": 28\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Hanya mengubah peringkat sekolah. Field lain dibiarkan."
+          },
+          "response": []
+        },
+        {
+          "name": "Hapus satu nilai profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat profil\", function () { pm.expect(j).to.include.keys(\"profil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"skor_tryout\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "`null` menghapus nilai. Di sini skor tryout dikosongkan."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Katalog",
+      "description": "Penelusuran PTN dan prodi.",
+      "item": [
+        {
+          "name": "Daftar PTN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat items, total, page, limit\", function () { pm.expect(j).to.include.keys(\"items\", \"total\", \"page\", \"limit\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/ptn?provinsi=Jawa Barat&page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "ptn"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Indonesia",
+                  "disabled": true
+                },
+                {
+                  "key": "provinsi",
+                  "value": "Jawa Barat"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Pencarian PTN dengan filter dan paginasi. Nama provinsi harus baku (38 provinsi)."
+          },
+          "response": []
+        },
+        {
+          "name": "Daftar prodi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat items, total\", function () { pm.expect(j).to.include.keys(\"items\", \"total\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/prodi?rumpun=Teknik&program=akademik&page=1&limit=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "prodi"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "komputer",
+                  "disabled": true
+                },
+                {
+                  "key": "rumpun",
+                  "value": "Teknik"
+                },
+                {
+                  "key": "provinsi",
+                  "value": "Jawa Barat",
+                  "disabled": true
+                },
+                {
+                  "key": "jalur",
+                  "value": "SNBT",
+                  "disabled": true
+                },
+                {
+                  "key": "ptn_id",
+                  "value": "ui",
+                  "disabled": true
+                },
+                {
+                  "key": "program",
+                  "value": "akademik"
+                },
+                {
+                  "key": "jenjang",
+                  "value": "S1",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Pencarian prodi. Filter: `q`, `rumpun`, `provinsi`, `jalur` (SNBP/SNBT), `ptn_id`, `program` (akademik/vokasi), `jenjang` (S1/D3/D4). Aktifkan filter lain di tab Params."
+          },
+          "response": []
+        },
+        {
+          "name": "Daftar prodi vokasi UI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat items, total\", function () { pm.expect(j).to.include.keys(\"items\", \"total\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/prodi?ptn_id=ui&program=vokasi&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "prodi"
+              ],
+              "query": [
+                {
+                  "key": "ptn_id",
+                  "value": "ui"
+                },
+                {
+                  "key": "program",
+                  "value": "vokasi"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Contoh filter `program=vokasi` untuk melengkapi komposisi pilihan SNBT."
+          },
+          "response": []
+        },
+        {
+          "name": "Detail prodi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat id, nama\", function () { pm.expect(j).to.include.keys(\"id\", \"nama\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/catalog/prodi/{{prodiId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "catalog",
+                "prodi",
+                "{{prodiId}}"
+              ]
+            },
+            "description": "Detail satu prodi: keketatan per jalur (daya tampung, peminat), acuan skor bila ada, dan status verifikasi. Ubah variabel `prodiId` untuk prodi lain."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Eksplorasi",
+      "description": "Rekomendasi rumpun, deterministik tanpa LLM.",
+      "item": [
+        {
+          "name": "Rekomendasi rumpun",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat rekomendasi, data_kurang, catatan\", function () { pm.expect(j).to.include.keys(\"rekomendasi\", \"data_kurang\", \"catatan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/explore",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "explore"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"top_n\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Rekomendasi rumpun jurusan dari minat dan nilai rapor (deterministik, tanpa LLM). Perlu profil dengan `minat` dan `nilai_rapor` (mis. Rani atau Dimas). Tiap rekomendasi memuat komponen skor, alasan, contoh profesi, dan daftar PTN pembukanya."
+          },
+          "response": []
+        },
+        {
+          "name": "Rekomendasi rumpun + kelayakan SNBT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat rekomendasi, jalur\", function () { pm.expect(j).to.include.keys(\"rekomendasi\", \"jalur\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/explore",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "explore"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"top_n\": 3,\n  \"jalur\": \"SNBT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sama seperti di atas, ditambah `kelayakan` per rumpun: ringkasan gate dan kategori reach/match/safe dari mesin yang sama dengan `/analyze`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Analisis",
+      "description": "Gate lalu penilaian reach/match/safe.",
+      "item": [
+        {
+          "name": "Analisis satu target",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil\", function () { pm.expect(j).to.include.keys(\"hasil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": [\n    {\n      \"prodi_id\": \"{{prodiId}}\",\n      \"jalur\": [\n        \"SNBT\"\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Gate lalu penilaian untuk satu prodi di satu jalur. Penilaian `null` bila gate tidak lolos."
+          },
+          "response": []
+        },
+        {
+          "name": "Analisis tiga target, dua jalur",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil\", function () { pm.expect(j).to.include.keys(\"hasil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\",\n      \"jalur\": [\n        \"SNBP\",\n        \"SNBT\"\n      ]\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\",\n      \"jalur\": [\n        \"SNBP\",\n        \"SNBT\"\n      ]\n    },\n    {\n      \"prodi_id\": \"ui-teknik-mesin\",\n      \"jalur\": [\n        \"SNBP\",\n        \"SNBT\"\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Persona Dimas: tiga prodi teknik UI di SNBP dan SNBT sekaligus (6 hasil). SNBP butuh `konfirmasi_syarat_prodi` yang sudah ada di profil Dimas."
+          },
+          "response": []
+        },
+        {
+          "name": "What-if: peringkat satu tingkat di luar kuota",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil\", function () { pm.expect(j).to.include.keys(\"hasil\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\",\n      \"jalur\": [\n        \"SNBP\"\n      ]\n    }\n  ],\n  \"override\": {\n    \"peringkat_sekolah\": 31\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "`override` menghitung ulang tanpa menyimpan apa pun. Dengan peringkat 31 dari 120 (25,83 persen) SNBP akreditasi B tanpa e-Rapor gugur karena kuota sekolah 25 persen; profil tersimpan tidak berubah."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 Strategi",
+      "description": "Evaluasi komposisi pilihan per jalur, what-if, dan penyimpanan.",
+      "item": [
+        {
+          "name": "Evaluasi komposisi SNBT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil, komposisi, temuan, disimpan\", function () { pm.expect(j).to.include.keys(\"hasil\", \"komposisi\", \"temuan\", \"disimpan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBT\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    },\n    {\n      \"prodi_id\": \"ui-v-akuntansi-d3\"\n    }\n  ],\n  \"shortlist\": [\n    \"ui-v-fisioterapi\",\n    \"ui-teknik-mesin\"\n  ],\n  \"simpan\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Mengevaluasi pilihan SNBT tanpa menyimpan: komposisi, temuan (pelanggaran/peringatan/info), dan saran swap dari `shortlist`."
+          },
+          "response": []
+        },
+        {
+          "name": "Contoh pelanggaran: 3 Sarjana tanpa vokasi",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat temuan\", function () { pm.expect(j).to.include.keys(\"temuan\"); });",
+                  "pm.test(\"Ada temuan butuh_vokasi\", function () { pm.expect(j.temuan.map(function (t) { return t.kode; })).to.include(\"butuh_vokasi\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBT\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-mesin\"\n    }\n  ],\n  \"shortlist\": [\n    \"ui-v-akuntansi-d3\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "SNBT dengan 3 pilihan tidak boleh seluruhnya Sarjana. Respons memuat temuan `butuh_vokasi` (pelanggaran) dan saran swap ke prodi vokasi dari `shortlist`."
+          },
+          "response": []
+        },
+        {
+          "name": "Contoh pelanggaran: SNBP lebih dari 2 pilihan",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat temuan\", function () { pm.expect(j).to.include.keys(\"temuan\"); });",
+                  "pm.test(\"Ada temuan melebihi_batas_pilihan\", function () { pm.expect(j.temuan.map(function (t) { return t.kode; })).to.include(\"melebihi_batas_pilihan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBP\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-mesin\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "SNBP maksimal 2 pilihan. Respons memuat temuan `melebihi_batas_pilihan`."
+          },
+          "response": []
+        },
+        {
+          "name": "What-if strategi SNBT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat hasil, disimpan\", function () { pm.expect(j).to.include.keys(\"hasil\", \"disimpan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBT\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-v-akuntansi-d3\"\n    }\n  ],\n  \"override\": {\n    \"peringkat_sekolah\": 100\n  },\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Dengan `override`, hasil dihitung ulang dan `simpan` dipaksa `false`: tidak ada yang tersimpan."
+          },
+          "response": []
+        },
+        {
+          "name": "Simpan strategi SNBP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat strategy_id, disimpan\", function () { pm.expect(j).to.include.keys(\"strategy_id\", \"disimpan\"); });",
+                  "pm.collectionVariables.set(\"strategyId\", j.strategy_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBP\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    }\n  ],\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Menyimpan pilihan SNBP (maks 2) agar dipakai `/summary`."
+          },
+          "response": []
+        },
+        {
+          "name": "Simpan strategi SNBT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat strategy_id, disimpan\", function () { pm.expect(j).to.include.keys(\"strategy_id\", \"disimpan\"); });",
+                  "pm.collectionVariables.set(\"strategyId\", j.strategy_id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/strategy",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "strategy"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jalur\": \"SNBT\",\n  \"pilihan\": [\n    {\n      \"prodi_id\": \"ui-teknik-industri\"\n    },\n    {\n      \"prodi_id\": \"ui-teknik-elektro\"\n    },\n    {\n      \"prodi_id\": \"ui-v-akuntansi-d3\"\n    }\n  ],\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Menyimpan pilihan SNBT (2 Sarjana + 1 D3). `strategy_id` disimpan ke variabel `strategyId`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "08 Ringkasan",
+      "description": "Perlu strategi tersimpan.",
+      "item": [
+        {
+          "name": "Ringkasan (strategi tersimpan terbaru)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat pilihan_akhir, fokus_persiapan, dokumen_syarat, narasi, narasi_fallback\", function () { pm.expect(j).to.include.keys(\"pilihan_akhir\", \"fokus_persiapan\", \"dokumen_syarat\", \"narasi\", \"narasi_fallback\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "summary"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Ringkasan siap cetak dari strategi tersimpan terbaru per jalur. Butuh minimal satu strategi yang disimpan (404 `strategi_belum_disimpan` bila belum). Tidak ada tautan publik."
+          },
+          "response": []
+        },
+        {
+          "name": "Ringkasan (strategy_id tertentu)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat pilihan_akhir, narasi\", function () { pm.expect(j).to.include.keys(\"pilihan_akhir\", \"narasi\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "summary"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy_id\": \"{{strategyId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Memakai strategi yang `strategy_id`-nya disimpan di variabel `strategyId`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "09 Tanya jawab",
+      "description": "Setiap request ini dibatasi 10 per menit per sesi. Tanpa kunci Gemini semuanya tetap 200 dengan teks cadangan.",
+      "item": [
+        {
+          "name": "Tanya dokumen resmi (RAG)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "query"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pertanyaan\": \"Berapa jumlah pilihan program studi di SNBP 2026?\",\n  \"mode\": \"tanya\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Pertanyaan bebas dijawab dari dokumen resmi dengan sitasi. Tanpa `GEMINI_API_KEY` atau dokumen belum di-ingest, hasilnya `yakin: false` dan `fallback: true` (HTTP tetap 200)."
+          },
+          "response": []
+        },
+        {
+          "name": "Tanya keputusan (dijawab mesin aturan)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "query"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pertanyaan\": \"Apakah saya lolos syarat SNBP?\",\n  \"mode\": \"tanya\",\n  \"konteks\": {\n    \"prodi_id\": \"ui-teknik-industri\",\n    \"jalur\": \"SNBP\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Pertanyaan keputusan pribadi dijawab mesin aturan, bukan LLM. Sertakan `konteks` agar bisa dihitung; tanpa konteks, respons meminta `konteks.prodi_id` dan `konteks.jalur`."
+          },
+          "response": []
+        },
+        {
+          "name": "Kenapa hasilnya begitu? (mode jelaskan)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "query"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pertanyaan\": \"Kenapa hasilnya begitu?\",\n  \"mode\": \"jelaskan\",\n  \"konteks\": {\n    \"prodi_id\": \"ui-teknik-industri\",\n    \"jalur\": \"SNBT\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Tombol \"Kenapa?\". `konteks.prodi_id` dan `konteks.jalur` wajib. Server menghitung ulang analisis, LLM hanya menjelaskan fakta itu. Tanpa LLM, dipakai teks cadangan."
+          },
+          "response": []
+        },
+        {
+          "name": "Di luar cakupan (harus yakin: false)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });",
+                  "pm.test(\"yakin = false\", function () { pm.expect(j.yakin).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/query",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "query"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pertanyaan\": \"Berapa skor UTBK minimal untuk diterima di Kedokteran UI?\",\n  \"mode\": \"tanya\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Tidak ada passing grade resmi, jadi sistem harus jujur: `yakin` bernilai `false`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "10 Admin",
+      "description": "Hanya dengan header `X-Admin-Key` (isi variabel environment `adminKey`).",
+      "item": [
+        {
+          "name": "Ingest profesi (contoh)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat tipe, diterima, ringkasan\", function () { pm.expect(j).to.include.keys(\"tipe\", \"diterima\", \"ringkasan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "X-Admin-Key",
+                "value": "{{adminKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/ingest",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "ingest"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipe\": \"profesi\",\n  \"payload\": [\n    {\n      \"rumpun\": \"Hukum\",\n      \"nama\": \"Notaris\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Memuat data lewat API. Butuh header `X-Admin-Key` (variabel environment `adminKey`); tanpa `ADMIN_KEY` di server endpoint ini 404. `tipe`: `rules`, `ketentuan`, `katalog`, `acuan`, `dokumen`, `profesi`. Kolom `payload` sama dengan berkas CSV di `data/seed`. Satu tipe = satu transaksi. PERHATIAN: ingest adalah upsert; baris tanpa `terakhir_diverifikasi` menimpa tanggal verifikasi yang sudah ada dengan kosong. Contoh ini hanya menambah satu profesi."
+          },
+          "response": []
+        },
+        {
+          "name": "Unggah PDF sumber RAG",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat dokumen_id, berkas\", function () { pm.expect(j).to.include.keys(\"dokumen_id\", \"berkas\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Admin-Key",
+                "value": "{{adminKey}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/dokumen/{{dokumenId}}/berkas?proses=false",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "dokumen",
+                "{{dokumenId}}",
+                "berkas"
+              ],
+              "query": [
+                {
+                  "key": "proses",
+                  "value": "false"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "berkas",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "description": "Mengunggah PDF resmi (maks 30 MB, harus berheader %PDF-). Pilih berkas pada field `berkas`. `proses=true` langsung memotong dan meng-embed (memakai kuota API). `dokumenId` harus sudah terdaftar lewat ingest `dokumen`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "11 Kasus gagal",
+      "description": "Contoh respons error: consent, token, validasi, dan 404.",
+      "item": [
+        {
+          "name": "Buat sesi tanpa consent (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"consent\": false,\n  \"consent_version\": \"{{consentVersion}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Consent wajib sebelum data apa pun diproses."
+          },
+          "response": []
+        },
+        {
+          "name": "Tanpa token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Semua endpoint selain `/health` dan `POST /session` butuh token."
+          },
+          "response": []
+        },
+        {
+          "name": "Validasi gagal (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Format error seragam: `error.kode`, `error.pesan`, `error.detail.field[]`."
+          },
+          "response": []
+        },
+        {
+          "name": "Prodi tidak ada (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analyze",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analyze"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targets\": [\n    {\n      \"prodi_id\": \"tidak-ada\",\n      \"jalur\": [\n        \"SNBT\"\n      ]\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Memuat daftar lengkap prodi yang tidak ditemukan di `error.detail`."
+          },
+          "response": []
+        },
+        {
+          "name": "Field tak dikenal ditolak (422)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", function () { pm.response.to.have.status(422); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profile"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nama_lengkap\": \"Contoh\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Skema profil sengaja tanpa identitas (nama, kontak, NIK). Field tak dikenal ditolak."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "12 Akhiri sesi",
+      "description": "Hapus data sesi aktif.",
+      "item": [
+        {
+          "name": "Hapus data saya",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/session",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "session"
+              ]
+            },
+            "description": "Menghapus sesi beserta seluruh data turunannya (profil, strategi, log pertanyaan). Token tidak berlaku lagi setelah ini, jadi buat sesi baru bila ingin lanjut."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
