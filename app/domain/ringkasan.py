@@ -193,6 +193,11 @@ def catatan_ringkasan(hasil_semua: Sequence[Mapping[str, Any]], jumlah_jalur: in
         catatan.append(
             "Sebagian data acuan berasal dari siklus sebelumnya. Cek ulang saat pendaftaran dibuka."
         )
+    if any("belum dikalibrasi" in (p.get("label") or "") for p in penilaian):
+        catatan.append(
+            "Bobot, batas, dan matriks penilaian masih nilai awal dan belum dikalibrasi tim data, "
+            "jadi kategori hanya indikatif."
+        )
     if any(h["status_verifikasi"] == "belum_diverifikasi" for h in hasil_semua):
         catatan.append(
             "Sebagian data belum diverifikasi tim data (lihat status_verifikasi). Cek ke sumber resmi sebelum memutuskan."
