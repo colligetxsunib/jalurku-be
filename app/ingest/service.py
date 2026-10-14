@@ -207,15 +207,14 @@ def _ingest_katalog(db: Session, payload: list[Mapping[str, Any]], k: Kebijakan)
     _upsert(db, m.Ptn, kat.ptn, ("id",))
     _upsert(db, m.Prodi, kat.prodi, ("id",))
     _upsert(db, m.ProdiJalur, kat.prodi_jalur, ("prodi_id", "jalur", "tahun_siklus"))
-    return HasilIngest(
-        "katalog",
-        diterima=len(kat.ptn) + len(kat.prodi),
-        ringkasan={
-            "ptn": len(kat.ptn),
-            "prodi": len(kat.prodi),
-            "prodi_jalur": len(kat.prodi_jalur),
-        },
-    )
+    ringkasan = {
+        "ptn": len(kat.ptn),
+        "prodi": len(kat.prodi),
+        "prodi_jalur": len(kat.prodi_jalur),
+    }
+    if kat.tanggal_diabaikan:  # hanya muncul bila ada, agar ringkasan biasa tetap ringkas
+        ringkasan["prodi_tanpa_data_tanggal_diabaikan"] = kat.tanggal_diabaikan
+    return HasilIngest("katalog", diterima=len(kat.ptn) + len(kat.prodi), ringkasan=ringkasan)
 
 
 def _ingest_acuan(db: Session, payload: list[Mapping[str, Any]], k: Kebijakan) -> HasilIngest:
