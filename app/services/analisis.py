@@ -144,7 +144,7 @@ def _nilai(
             sumber.append(
                 SumberData("acuan_skor", baris_acuan.sumber_url, baris_acuan.terakhir_diverifikasi)
             )
-        return nilai_snbt(
+        hasil = nilai_snbt(
             profil,
             acuan=acuan,
             keketatan=kek,
@@ -153,16 +153,22 @@ def _nilai(
             teks_catatan=teks,
             tahun_siklus=ref.tahun_siklus,
         )
-    return nilai_snbp(
-        profil,
-        prodi_id=t.prodi.id,
-        ptn_id=t.ptn.id,
-        keketatan=kek,
-        basis_pita=_basis_pita(ref, config, jalur, t.prodi.program),
-        cfg=cfg,
-        teks_catatan=teks,
-        tahun_siklus=ref.tahun_siklus,
-    )
+    else:
+        hasil = nilai_snbp(
+            profil,
+            prodi_id=t.prodi.id,
+            ptn_id=t.ptn.id,
+            keketatan=kek,
+            basis_pita=_basis_pita(ref, config, jalur, t.prodi.program),
+            cfg=cfg,
+            teks_catatan=teks,
+            tahun_siklus=ref.tahun_siklus,
+        )
+    if hasil.kategori == "belum_ada_acuan":
+        # Tanpa data acuan tidak ada yang bisa diverifikasi: status hasil ini tidak boleh tampil
+        # "terverifikasi" hanya karena syarat gate-nya terverifikasi. Sumber tanpa URL dan tanggal.
+        sumber.append(SumberData("keketatan", None, None))
+    return hasil
 
 
 def analisis_satu(
