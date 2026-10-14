@@ -1,11 +1,11 @@
-ptn_id,nama,provinsi
-ui,Universitas Indonesia,Jawa Barat
-ugm,Universitas Gadjah Mada,DI Yogyakarta
-itb,Institut Teknologi Bandung,Jawa Barat
-unair,Universitas Airlangga,Jawa Timur
-ipb,Institut Pertanian Bogor,Jawa Barat
-ub,Universitas Brawijaya,Jawa Timur
-its,Institut Teknologi Sepuluh Nopember,Jawa Timur
-unhas,Universitas Hasanuddin,Sulawesi Selatan
-undip,Universitas Diponegoro,Jawa Tengah
-uns,Universitas Sebelas Maret,Jawa Tengah
+ptn_id,nama,provinsi,terakhir_diverifikasi
+ui,Universitas Indonesia,Jawa Barat,2026-10-14
+ugm,Universitas Gadjah Mada,DI Yogyakarta,2026-10-14
+itb,Institut Teknologi Bandung,Jawa Barat,2026-10-14
+unair,Universitas Airlangga,Jawa Timur,2026-10-14
+ipb,Institut Pertanian Bogor,Jawa Barat,2026-10-14
+ub,Universitas Brawijaya,Jawa Timur,2026-10-14
+its,Institut Teknologi Sepuluh Nopember,Jawa Timur,2026-10-14
+unhas,Universitas Hasanuddin,Sulawesi Selatan,2026-10-14
+undip,Universitas Diponegoro,Jawa Tengah,2026-10-14
+uns,Universitas Sebelas Maret,Jawa Tengah,2026-10-14
