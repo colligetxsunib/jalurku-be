@@ -89,8 +89,8 @@
     },
     "penilaian": {
       "SNBT": {
-        "ui-ilmu-komputer": "safe",
-        "ui-teknik-industri": "safe",
+        "ui-ilmu-komputer": "match",
+        "ui-teknik-industri": "match",
         "ui-v-akuntansi-d3": "reach"
       }
     }

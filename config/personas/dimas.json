@@ -103,7 +103,7 @@
         "ui-teknik-elektro": "belum_ada_acuan"
       },
       "SNBT": {
-        "ui-teknik-industri": "match",
+        "ui-teknik-industri": "reach",
         "ui-teknik-elektro": "match",
         "ui-v-akuntansi-d3": "reach"
       }
