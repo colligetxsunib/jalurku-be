@@ -57,7 +57,7 @@
                 "exec": [
                   "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat token, expires_at, sisa_detik\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\"); });",
+                  "pm.test(\"Respons memuat token, expires_at, sisa_detik, pemberitahuan\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\", \"pemberitahuan\"); });",
                   "pm.collectionVariables.set(\"token\", j.token);"
                 ]
               }
@@ -95,7 +95,7 @@
                 }
               }
             },
-            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam)."
+            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam). Respons memuat `pemberitahuan` (catatan demo data fiktif) yang wajib ditampilkan di UI."
           },
           "response": []
         },
@@ -483,7 +483,7 @@
                 "exec": [
                   "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat token, expires_at, sisa_detik\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\"); });",
+                  "pm.test(\"Respons memuat token, expires_at, sisa_detik, pemberitahuan\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\", \"pemberitahuan\"); });",
                   "pm.collectionVariables.set(\"token\", j.token);"
                 ]
               }
@@ -521,7 +521,7 @@
                 }
               }
             },
-            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam)."
+            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam). Respons memuat `pemberitahuan` (catatan demo data fiktif) yang wajib ditampilkan di UI."
           },
           "response": []
         },
@@ -1110,7 +1110,7 @@
                 "exec": [
                   "pm.test(\"Status 201\", function () { pm.response.to.have.status(201); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat token, expires_at, sisa_detik\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\"); });",
+                  "pm.test(\"Respons memuat token, expires_at, sisa_detik, pemberitahuan\", function () { pm.expect(j).to.include.keys(\"token\", \"expires_at\", \"sisa_detik\", \"pemberitahuan\"); });",
                   "pm.collectionVariables.set(\"token\", j.token);"
                 ]
               }
@@ -1148,7 +1148,7 @@
                 }
               }
             },
-            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam)."
+            "description": "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam). Respons memuat `pemberitahuan` (catatan demo data fiktif) yang wajib ditampilkan di UI."
           },
           "response": []
         },
@@ -1162,7 +1162,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat sisa_detik, expires_at\", function () { pm.expect(j).to.include.keys(\"sisa_detik\", \"expires_at\"); });"
+                  "pm.test(\"Respons memuat sisa_detik, expires_at, pemberitahuan\", function () { pm.expect(j).to.include.keys(\"sisa_detik\", \"expires_at\", \"pemberitahuan\"); });"
                 ]
               }
             }
