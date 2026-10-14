@@ -37,6 +37,12 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://jalurku:jalurku@127.0.0.1:5433/jalurku"
     gemini_api_key: str = ""
+    # Nama model Gemini. Kosong = pakai nilai bawaan di config/app.yaml (llm.model, embedding.model).
+    # Daftar nama yang valid untuk kunci Anda: uv run python -m scripts.list_models
+    llm_model: str = ""
+    embed_model: str = ""
+    # Model cadangan generate, dipisah koma, dicoba berurutan bila model utama 404 atau 429.
+    llm_model_fallback: str = ""
     admin_key: str = ""
     cors_origins: str = ""
     # IP/CIDR reverse proxy (nginx) yang boleh menyetel X-Forwarded-For; menimpa rate_limit.proxy_tepercaya
@@ -60,6 +66,17 @@ class Settings(BaseSettings):
     @property
     def trusted_proxies_list(self) -> list[str]:
         return [p.strip() for p in self.trusted_proxies.split(",") if p.strip()]
+
+    @property
+    def llm_model_fallback_list(self) -> list[str]:
+        """Model cadangan berurutan, tanpa duplikat dan tanpa model utama."""
+        utama = self.llm_model.strip()
+        hasil: list[str] = []
+        for nama in self.llm_model_fallback.split(","):
+            nama = nama.strip()
+            if nama and nama != utama and nama not in hasil:
+                hasil.append(nama)
+        return hasil
 
 
 class _Strict(BaseModel):
@@ -247,6 +264,8 @@ class JalurPenilaianConfig(_Strict):
     pita_keketatan: PitaConfig
     matriks: MatriksConfig
     skala_skor_tryout: SkalaSkorTryoutConfig | None = None
+    # Label yang menyertai setiap penilaian. Ganti ke "indikatif" setelah tim data selesai mengkalibrasi.
+    label_penilaian: str = Field(default="indikatif, belum dikalibrasi", min_length=1)
 
 
 class StrategiConfig(_Strict):
@@ -278,6 +297,11 @@ class QueryConfig(_Strict):
 
 class TeksConfig(_Strict):
     catatan_sel: dict[str, str] = Field(default_factory=dict)
+    # Ditampilkan frontend bersama consent (dikirim di respons sesi). Syarat peluncuran nyata ada di PRD v1.1.
+    pemberitahuan_demo: str = Field(
+        default="Demo ini memakai data fiktif. Jangan mengisi data pribadi yang nyata.",
+        min_length=1,
+    )
 
 
 class ExploreBobot(_Strict):
@@ -378,6 +402,22 @@ def get_settings() -> Settings:
     return Settings()
 
 
+def terapkan_env_model(config: AppConfig, settings: Settings) -> AppConfig:
+    """LLM_MODEL dan EMBED_MODEL (bila diisi) menimpa llm.model dan embedding.model di YAML.
+
+    Idempoten. Hanya mengubah nama model; tidak menyentuh logika keputusan.
+    """
+    ubah: dict[str, object] = {}
+    llm_model = settings.llm_model.strip()
+    embed_model = settings.embed_model.strip()
+    if llm_model and llm_model != config.llm.model:
+        ubah["llm"] = config.llm.model_copy(update={"model": llm_model})
+    if embed_model and embed_model != config.embedding.model:
+        ubah["embedding"] = config.embedding.model_copy(update={"model": embed_model})
+    return config.model_copy(update=ubah) if ubah else config
+
+
 @lru_cache
 def get_app_config() -> AppConfig:
-    return load_app_config(get_settings().app_config_path)
+    settings = get_settings()
+    return terapkan_env_model(load_app_config(settings.app_config_path), settings)
