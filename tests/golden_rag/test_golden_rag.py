@@ -31,6 +31,7 @@ from app.evaluasi.golden import (
 from app.ingest.service import ingest_direktori
 from app.llm.prompts import JawabanRAG
 from app.main import create_app
+from scripts.run_golden_set import LONGGAR
 from tests.conftest import make_settings
 from tests.fakes import FakeLLM
 from tests.helpers import SEED_DIR
@@ -58,10 +59,23 @@ def respons(**kw):
 
 def test_golden_csv_yang_ada_terbaca():
     daftar = muat_soal_rag()
-    assert len(daftar) == 12
-    assert {s.tipe for s in daftar} == {"dalam_cakupan", "di_luar_cakupan", "keputusan"}
-    assert [s.nomor for s in daftar] == list(range(1, 13))
+    assert len(daftar) == 23
+    tipe = [s.tipe for s in daftar]
+    assert {t: tipe.count(t) for t in set(tipe)} == {
+        "dalam_cakupan": 13,
+        "di_luar_cakupan": 6,
+        "keputusan": 4,
+    }
+    assert [s.nomor for s in daftar] == list(range(1, 24))
     assert all(s.sumber_url for s in daftar if s.tipe == "dalam_cakupan")
+    assert all(s.sumber_url is None for s in daftar if s.tipe == "di_luar_cakupan")
+
+
+def test_golden_csv_memenuhi_syarat_jumlah_prd():
+    """23 pertanyaan, 6 di luar cakupan (min 5), 4 keputusan (min 3). Halaman boleh masih sebagian."""
+    kurang = periksa_kecukupan(muat_soal_rag())
+    assert not [k for k in kurang if "pertanyaan (minimal" in k or "di luar cakupan" in k], kurang
+    assert not [k for k in kurang if "pertanyaan keputusan" in k], kurang
 
 
 def lengkap(n_luar=5, n_putusan=3, total=20):
@@ -213,9 +227,22 @@ def test_laporan_csv_punya_kolom_nilai_manual_kosong(tmp_path: Path):
 
 
 @pytest.mark.db
-def test_tanpa_llm_kejujuran_dan_keputusan_tetap_lulus_dalam_cakupan_tidak(app_seed):
-    """Tanpa kunci API: sistem tidak mengarang. Di luar cakupan dan keputusan lulus, RAG tidak."""
-    hasil = jalankan_rag(app_seed, muat_soal_rag())
+def test_tanpa_llm_kejujuran_dan_keputusan_tetap_lulus_dalam_cakupan_tidak(
+    clean_db: Engine, app_config: AppConfig
+):
+    """Tanpa kunci API: sistem tidak mengarang. Di luar cakupan dan keputusan lulus, RAG tidak.
+
+    Batas laju dilonggarkan seperti di scripts/run_golden_set.py: 23 sesi dalam semenit melebihi
+    batas pembuatan sesi per IP bawaan.
+    """
+    with Session(clean_db) as db:
+        assert all(h.ok for h in ingest_direktori(db, SEED_DIR))
+    rl = app_config.rate_limit.model_copy(
+        update={k: LONGGAR for k in ("per_sesi", "per_ip", "buat_sesi_per_ip", "llm_per_sesi")}
+    )
+    app = create_app(make_settings(), app_config.model_copy(update={"rate_limit": rl}), clean_db)
+    with TestClient(app, raise_server_exceptions=False) as app_seed:
+        hasil = jalankan_rag(app_seed, muat_soal_rag())
     r = ringkas_rag(hasil)
     assert r["kejujuran_di_luar_cakupan"]["persen"] == 100.0
     assert r["keputusan_dari_mesin_aturan"]["persen"] == 100.0

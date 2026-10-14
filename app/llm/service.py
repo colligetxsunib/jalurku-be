@@ -51,6 +51,7 @@ def buat_client(settings: Settings, config: AppConfig) -> LLMClient:
         embedding_model=config.embedding.model,
         dimensi=config.embedding.dimensi,
         timeout_detik=config.llm.timeout_detik,
+        model_cadangan=settings.llm_model_fallback_list,
     )
 
 

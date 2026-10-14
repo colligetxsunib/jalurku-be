@@ -199,7 +199,7 @@ def test_tulis_halaman_semua_persona(app_seed, tmp_path: Path):
         assert not re.search(r"Bearer|token|session_id|<script", html, re.IGNORECASE)
         assert re.search(r"\d\s*%", tanpa_css(html)) is None
     rani = (tmp_path / "demo_statis" / "rani.html").read_text(encoding="utf-8")
-    assert "Ilmu Komputer" in rani and "Reach" in rani and "Safe" in rani
+    assert "Ilmu Komputer" in rani and "Reach" in rani and "Match" in rani
     budi = (tmp_path / "demo_statis" / "budi.html").read_text(encoding="utf-8")
     assert "Belum memenuhi syarat" in budi  # kasus gagal ditampilkan jujur, bukan disembunyikan
     sinta = (tmp_path / "demo_statis" / "sinta.html").read_text(encoding="utf-8")

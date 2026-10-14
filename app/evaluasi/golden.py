@@ -32,7 +32,7 @@ from app.services.refdata import muat_refdata
 
 API = "/api/v1"
 GOLDEN_GATE = ROOT_DIR / "config" / "golden" / "gate.json"
-GOLDEN_RAG_CSV = ROOT_DIR / "data" / "seed" / "golden_set_draft.csv"
+GOLDEN_RAG_CSV = ROOT_DIR / "data" / "seed" / "golden_set.csv"
 CONSENT = {"consent": True, "consent_version": "golden-set"}
 
 # Syarat minimal golden set RAG (PRD bagian 14)

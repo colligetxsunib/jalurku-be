@@ -259,7 +259,9 @@ def test_fokus_dari_faktor_terlemah_untuk_reach_dan_match(app_seed):
 
 def test_pilihan_safe_diberi_fokus_pertahankan(app_seed):
     h = muat_persona(app_seed, "rani")
-    simpan(app_seed, h, "SNBT", [IK])
+    simpan(
+        app_seed, h, "SNBT", ["ui-teknik-elektro"]
+    )  # rasio 20,4: pita rendah di antara prodi akademik
     d = ok(ringkas(app_seed, h))
     assert d["pilihan_akhir"][0]["kategori"] == "safe"
     assert [f["jenis"] for f in d["fokus_persiapan"]] == ["pertahankan"]

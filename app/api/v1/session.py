@@ -41,17 +41,25 @@ def buat_sesi(
     token, sesi = layanan.buat_sesi(
         db, consent_version=body.consent_version.strip(), ttl_jam=ttl_jam
     )
-    return SessionCreated(token=token, expires_at=sesi.expires_at, sisa_detik=sesi.sisa_detik())
+    return SessionCreated(
+        token=token,
+        expires_at=sesi.expires_at,
+        sisa_detik=sesi.sisa_detik(),
+        pemberitahuan=config.teks.pemberitahuan_demo,
+    )
 
 
 @router.get("/session", response_model=SessionStatus)
-def status_sesi(sesi: SesiAktif = Depends(sesi_saat_ini)) -> SessionStatus:
+def status_sesi(
+    sesi: SesiAktif = Depends(sesi_saat_ini), config: AppConfig = Depends(get_config)
+) -> SessionStatus:
     return SessionStatus(
         dibuat_pada=sesi.created_at,
         consent_at=sesi.consent_at,
         consent_version=sesi.consent_version,
         expires_at=sesi.expires_at,
         sisa_detik=sesi.sisa_detik(),
+        pemberitahuan=config.teks.pemberitahuan_demo,
     )
 
 

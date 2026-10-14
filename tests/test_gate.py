@@ -15,8 +15,9 @@ from app.domain.gate import Rules, evaluasi_gate
 from app.domain.ketentuan import Ketentuan, KetentuanHilang, RuleError
 from app.ingest.csv_io import baca_csv
 from app.ingest.rules import rules_dari_baris
+from tests.helpers import SEED_DIR
 
-SEED = ROOT_DIR / "data" / "seed"
+SEED = SEED_DIR  # salinan netral tanpa tanggal verifikasi
 PERSONA_DIR = ROOT_DIR / "config" / "personas"
 
 

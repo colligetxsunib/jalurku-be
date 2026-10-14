@@ -109,7 +109,8 @@ class TestSesiAPI:
 
     def test_buat_sesi_dan_hanya_hash_disimpan(self, client: TestClient, clean_db: Engine):
         data = _buat(client)
-        assert set(data) == {"token", "expires_at", "sisa_detik"}
+        assert set(data) == {"token", "expires_at", "sisa_detik", "pemberitahuan"}
+        assert "data fiktif" in data["pemberitahuan"]  # catatan demo untuk UI
         assert 86390 <= data["sisa_detik"] <= 86400
         with Session(clean_db) as s:
             baris = s.query(Sesi).one()

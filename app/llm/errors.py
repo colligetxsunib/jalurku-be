@@ -15,6 +15,10 @@ class LLMKuotaHabis(LLMError):
     """HTTP 429 dari penyedia (batas permintaan per menit/hari)."""
 
 
+class LLMModelTidakAda(LLMError):
+    """HTTP 404 dari penyedia: nama model salah atau sudah tidak tersedia."""
+
+
 class LLMTimeout(LLMError):
     pass
 

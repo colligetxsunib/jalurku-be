@@ -283,7 +283,7 @@ def test_hasil_selalu_berlabel_indikatif_dan_tanpa_persentase_peluang(cfg, cfg_a
     d = h.ke_dict()
     assert (
         d["indikatif"] is True
-        and d["label"] == "indikatif"
+        and d["label"] == "indikatif, belum dikalibrasi"
         and d["keyakinan"] in ("rendah", "sedang")
     )
     teks = json.dumps(d).lower()

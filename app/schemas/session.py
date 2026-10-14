@@ -18,6 +18,7 @@ class SessionCreated(BaseModel):
     token: str
     expires_at: datetime
     sisa_detik: int
+    pemberitahuan: str  # catatan "demo memakai data fiktif" untuk ditampilkan di UI
 
 
 class SessionStatus(BaseModel):
@@ -27,3 +28,4 @@ class SessionStatus(BaseModel):
     consent_version: str
     expires_at: datetime
     sisa_detik: int
+    pemberitahuan: str

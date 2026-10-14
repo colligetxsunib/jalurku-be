@@ -317,7 +317,7 @@ def nilai_dengan_matriks(
             kategori="belum_ada_acuan",
             metode="matriks_keketatan",
             indikatif=True,
-            label="indikatif",
+            label=cfg.label_penilaian,
             alasan=(
                 f"Belum ada data peminat dan daya tampung {jalur} untuk prodi ini, sehingga "
                 "keketatan tidak bisa dihitung. Sistem tidak menebak."
@@ -330,7 +330,7 @@ def nilai_dengan_matriks(
             kategori="belum_ada_acuan",
             metode="matriks_keketatan",
             indikatif=True,
-            label="indikatif",
+            label=cfg.label_penilaian,
             alasan=(
                 f"Data pembanding {jalur} terlalu sedikit ({basis_pita.n_prodi} prodi, minimal "
                 f"{cfg.pita_keketatan.min_sampel}) untuk menentukan pita keketatan."
@@ -346,7 +346,7 @@ def nilai_dengan_matriks(
             kategori="data_kurang",
             metode="matriks_keketatan",
             indikatif=True,
-            label="indikatif",
+            label=cfg.label_penilaian,
             alasan="Nilai rapor belum diisi, sehingga tier siswa tidak bisa dihitung.",
             pita=info_pita,
             data_kurang=(DataKurang("nilai_rapor", pertanyaan_untuk("nilai_rapor")),),
@@ -385,7 +385,7 @@ def nilai_dengan_matriks(
         kategori=kategori,
         metode="matriks_keketatan",
         indikatif=True,
-        label="indikatif",
+        label=cfg.label_penilaian,
         keyakinan=yakin.nilai,
         alasan=alasan,
         tier=tier,

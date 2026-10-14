@@ -2,18 +2,18 @@
 
     python -m scripts.check_verified               # ringkasan
     python -m scripts.check_verified --detail      # daftar baris yang belum terverifikasi
-    python -m scripts.check_verified --ketat       # katalog (ptn, prodi, ...) ikut dihitung gagal
+    python -m scripts.check_verified --ketat       # katalog, persona, dan kasus gate ikut dihitung gagal
 
 Yang diperiksa:
-- tabel kritis di DB (rules_jalur, ketentuan, acuan_skor): wajib terverifikasi, inilah yang dijaga
-  REQUIRE_VERIFIED=true saat start;
-- katalog (ptn, prodi, prodi_jalur, dokumen_sumber): peringatan, gagal hanya dengan --ketat;
-- persona demo dan kasus golden gate: `hasil_terverifikasi` / `terakhir_diverifikasi` harus diisi
-  manusia setelah mencocokkan dengan sumber resmi;
+- tabel kritis di DB (rules_jalur, ketentuan, acuan_skor): WAJIB terverifikasi, inilah yang dijaga
+  REQUIRE_VERIFIED=true saat start. Kode keluar 1 bila ada yang belum;
+- katalog (ptn, prodi, prodi_jalur, dokumen_sumber): peringatan. Prodi tanpa data keketatan (mis. PTN
+  selain UI) tidak dihitung terverifikasi dan dilaporkan terpisah sebagai "belum ada data acuan";
+- persona demo dan kasus golden gate: peringatan. Hanya yang sudah diverifikasi manusia yang bertanda
+  OK; sisanya adalah keterbatasan yang dicatat (PRD v1.1), bukan kegagalan;
 - kecukupan golden set RAG terhadap syarat PRD.
 
-Skrip ini hanya MELAPORKAN. Ia tidak pernah mengisi tanggal verifikasi. Kode keluar 1 bila ada yang
-wajib tetapi belum terverifikasi.
+Skrip ini hanya MELAPORKAN. Ia tidak pernah mengisi tanggal verifikasi.
 """
 
 from __future__ import annotations
@@ -30,6 +30,7 @@ from app.db.verifikasi import (
     TABEL_KRITIS,
     cari_belum_terverifikasi,
     hitung_per_tabel,
+    jumlah_prodi_tanpa_data,
 )
 from app.evaluasi import golden
 from app.services import persona as modul_persona
@@ -47,21 +48,27 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--detail", action="store_true", help="tampilkan baris yang belum terverifikasi"
     )
-    ap.add_argument("--ketat", action="store_true", help="katalog yang belum terverifikasi = gagal")
+    ap.add_argument(
+        "--ketat",
+        action="store_true",
+        help="katalog, persona, dan kasus gate belum terverifikasi = gagal",
+    )
     ap.add_argument("--database-url", default=None)
     a = ap.parse_args(argv)
 
     settings = get_settings()
-    gagal = False
+    gagal = False  # kegagalan wajib (tabel kritis, atau semuanya bila --ketat)
+    peringatan = 0
 
     print(f"REQUIRE_VERIFIED saat ini: {'true' if settings.require_verified else 'false'}")
     engine = make_engine(a.database_url or settings.database_url)
     with Session(engine) as db:
         hitung = hitung_per_tabel(db, lengkap=True)
         temuan = cari_belum_terverifikasi(db, lengkap=True)
+        tanpa_data = jumlah_prodi_tanpa_data(db)
     engine.dispose()
 
-    print("\n1. Tabel kritis (dijaga REQUIRE_VERIFIED saat start)")
+    print("\n1. Tabel kritis (WAJIB, dijaga REQUIRE_VERIFIED saat start)")
     for t in TABEL_KRITIS:
         belum, total = hitung[t]
         print(_baris_tabel(t, belum, total))
@@ -74,9 +81,15 @@ def main(argv: list[str] | None = None) -> int:
     print("\n2. Katalog" + (" (ketat)" if a.ketat else " (peringatan)"))
     for t in TABEL_KATALOG:
         belum, total = hitung[t]
-        print(_baris_tabel(t, belum, total))
-        if a.ketat:
-            gagal |= belum > 0
+        label = "prodi (ber-data)" if t == "prodi" else t
+        print(_baris_tabel(label, belum, total))
+        if belum:
+            peringatan += 1
+            gagal |= a.ketat
+    print(
+        f"   [INFO   ] {tanpa_data} prodi tanpa daya tampung/peminat (PTN selain UI): tampil "
+        "'belum ada data acuan', tidak dihitung terverifikasi"
+    )
 
     if a.detail and temuan:
         print("\n   Baris belum terverifikasi:")
@@ -85,39 +98,47 @@ def main(argv: list[str] | None = None) -> int:
         if len(temuan) > MAKS_DETAIL:
             print(f"   ... dan {len(temuan) - MAKS_DETAIL} lainnya")
 
-    print("\n3. Persona demo (hasil terverifikasi manusia)")
+    print("\n3. Persona demo (hasil terverifikasi manusia)" + ("" if a.ketat else " (peringatan)"))
     for p in modul_persona.muat_semua():
         h = p.harapan
         ok = h.hasil_terverifikasi
-        gagal |= not ok
+        if not ok:
+            peringatan += 1
+            gagal |= a.ketat
         oleh = f" oleh {h.diverifikasi_oleh} pada {h.terakhir_diverifikasi}" if ok else ""
         print(f"   [{'OK     ' if ok else 'BELUM  '}] {p.id}{oleh}")
 
-    print("\n4. Kasus golden gate")
+    print("\n4. Kasus golden gate" + ("" if a.ketat else " (peringatan)"))
     kasus = golden.muat_kasus_gate()
     belum_kasus = [k.id for k in kasus if not k.terverifikasi]
     print(
-        f"   [{'OK     ' if not belum_kasus else 'BELUM  '}] {len(kasus) - len(belum_kasus)}/{len(kasus)} terverifikasi"
+        f"   [{'OK     ' if not belum_kasus else 'BELUM  '}] "
+        f"{len(kasus) - len(belum_kasus)}/{len(kasus)} terverifikasi"
     )
-    gagal |= bool(belum_kasus)
+    if belum_kasus:
+        peringatan += 1
+        gagal |= a.ketat
     if a.detail and belum_kasus:
         print("   Belum: " + ", ".join(belum_kasus))
 
-    print("\n5. Golden set RAG (data/seed/golden_set_draft.csv)")
-    kurang = golden.periksa_kecukupan(golden.muat_soal_rag())
+    print(f"\n5. Golden set RAG ({golden.GOLDEN_RAG_CSV.name})")
+    soal = golden.muat_soal_rag()
+    kurang = golden.periksa_kecukupan(soal)
     for k in kurang:
         print(f"   [KURANG ] {k}")
     if not kurang:
-        print("   [OK     ] memenuhi syarat minimal PRD")
+        print(f"   [OK     ] {len(soal)} pertanyaan, memenuhi syarat minimal PRD")
 
-    print(
-        "\n"
-        + (
-            "SIAP: semua yang wajib sudah terverifikasi."
-            if not gagal
-            else "BELUM SIAP: ada yang wajib tetapi belum terverifikasi manusia."
+    if gagal:
+        penutup = "BELUM SIAP: ada yang wajib tetapi belum terverifikasi manusia."
+    elif peringatan:
+        penutup = (
+            f"SIAP untuk data kritis. {peringatan} peringatan (katalog/persona/kasus gate belum "
+            "terverifikasi) dicatat sebagai keterbatasan; gunakan --ketat untuk menjadikannya gagal."
         )
-    )
+    else:
+        penutup = "SIAP: semua sudah terverifikasi."
+    print("\n" + penutup)
     return 1 if gagal else 0
 
 

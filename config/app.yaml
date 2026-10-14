@@ -15,8 +15,9 @@ rate_limit:
   proxy_tepercaya: []              # IP/CIDR proxy yang boleh menyetel X-Forwarded-For
 
 llm:
-  # Nama model generatif. Cek ketersediaan dan kuota di AI Studio (PRD bagian 17 #7)
-  # lalu jalankan: uv run python -m scripts.check_gemini
+  # Nilai BAWAAN saja. Nama model sebenarnya diisi lewat env LLM_MODEL (dan LLM_MODEL_FALLBACK
+  # untuk cadangan), karena penyedia bisa menghentikan model (404). Cari nama yang valid:
+  #   uv run python -m scripts.list_models   lalu   uv run python -m scripts.check_gemini
   model: gemini-2.5-flash
   timeout_detik: 20
   maks_konkuren: 3
@@ -24,6 +25,7 @@ llm:
 
 embedding:
   # DIKUNCI. Mengganti model atau dimensi berarti migrasi kolom dan re-embed semua chunk.
+  # Nilai bawaan; env EMBED_MODEL menimpa bila diisi.
   model: gemini-embedding-001
   dimensi: 768
 
@@ -117,6 +119,9 @@ profil:
 # Batas bawah inklusif untuk kelompok yang lebih tinggi: skor == batas masuk tier/pita yang lebih tinggi.
 # ---------------------------------------------------------------------------------------------
 snbp:
+  # Semua bobot, batas, dan isi matriks memakai nilai awal dan BELUM DIKALIBRASI (keputusan 14 Oktober 2026).
+  # Label ini ikut di setiap penilaian dan catatan ringkasan; ganti ke "indikatif" setelah dikalibrasi.
+  label_penilaian: "indikatif, belum dikalibrasi"
   tier_siswa: &tier_awal
     bobot: {rapor: 0.5, tren: 0.2, peringkat: 0.3}
     batas: {lemah_sedang: 0.60, sedang_kuat: 0.80}   # skor_siswa 0-1
@@ -142,6 +147,7 @@ snbp:
       tinggi: {kategori: reach}
 
 snbt:
+  label_penilaian: "indikatif, belum dikalibrasi"
   # Tanpa acuan skor resmi, SNBT memakai matriks yang sama. Tier dari rapor hanya PROKSI karena seleksi
   # berdasar skor UTBK. Bila tabel acuan_skor terisi untuk sebuah prodi, jalur skor-vs-acuan dipakai.
   tier_siswa: *tier_awal
@@ -150,9 +156,14 @@ snbt:
     batas: {rendah_sedang: 5, sedang_tinggi: 15}
     persentil: {rendah_sedang: 33, sedang_tinggi: 67}
     min_sampel: 8
-    kelompok: semua
+    # program = persentil dihitung terpisah untuk akademik dan vokasi. Dengan "semua", rasio vokasi yang
+    # tinggi (46 sampai 165) menggeser batas sehingga prodi akademik terlalu mudah jatuh ke pita rendah
+    # (mis. Ilmu Komputer UI menjadi safe). Diputuskan tim data 14 Oktober 2026.
+    kelompok: program
   matriks: *matriks_awal
-  # Isi bila sudah ada skala skor tryout yang bisa dipetakan; tier lalu berpindah ke skor tryout.
+  # DINONAKTIFKAN (keputusan tim 14 Oktober 2026): skor tryout tidak memengaruhi kategori. Tier SNBT
+  # selalu dari rapor (proksi). Skor tryout hanya dipakai bila tabel acuan_skor terisi untuk sebuah prodi.
+  # Untuk mengaktifkan kelak, isi batas lalu hapus "null":
   # skala_skor_tryout:
   #   batas: {lemah_sedang: 600, sedang_kuat: 750}
   skala_skor_tryout: null
@@ -179,6 +190,7 @@ query:
   pola_keputusan:
     - '\b(aku|saya|gue|gw|ku)\b.*\b(lolos|diterima|keterima|memenuhi syarat|layak|berhak|bisa ikut|boleh ikut|dapat ikut|bisakah|bolehkah|dapatkah)\b'
     - '\b(lolos|diterima|keterima)\b.*\b(nggak|ngga|gak|tidak|kah)\b.*\b(aku|saya|ku)\b'
+    - '\b(aku|saya|gue|gw|ku)\b.*\b(masuk kuota|memenuhi kuota|termasuk eligible|jadi eligible)\b'
     - '\b(peluang|kemungkinan|chance)\b.*\b(aku|saya|ku)\b'
     - '\b(aku|saya|ku)\b.*\b(peluang|kemungkinan|chance)\b'
     - '\bpasti\b.*\b(lolos|diterima|keterima)\b'
@@ -186,6 +198,8 @@ query:
 
 # Teks yang ditampilkan ke siswa (bebas diubah tanpa revisi PRD)
 teks:
+  # Catatan prototipe yang wajib tampil di UI (dikirim di POST /session dan GET /session).
+  pemberitahuan_demo: Demo ini memakai data fiktif. Jangan mengisi data pribadi yang nyata.
   catatan_sel:
     batas_match_reach: Berada di batas antara match dan reach. Perlakukan sebagai reach dan siapkan pilihan lain.
 

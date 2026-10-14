@@ -16,6 +16,7 @@ from app.core.config import AppConfig, Settings, load_app_config
 from app.db.models import Base
 from app.db.session import make_engine
 from app.main import create_app
+from tests.helpers import SEED_DIR
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_TEST_URL = "postgresql+psycopg://jalurku:jalurku@127.0.0.1:5433/jalurku_test"
@@ -74,7 +75,7 @@ def app_seed(clean_db: Engine, app_config: AppConfig) -> Iterator[TestClient]:
     from app.ingest.service import ingest_direktori
 
     with Session(clean_db) as db:
-        hasil = ingest_direktori(db, ROOT / "data" / "seed")
+        hasil = ingest_direktori(db, SEED_DIR)
         assert all(h.ok for h in hasil), [e for h in hasil for e in h.error]
     app = create_app(make_settings(), app_config, clean_db)
     with TestClient(app, raise_server_exceptions=False) as c:
