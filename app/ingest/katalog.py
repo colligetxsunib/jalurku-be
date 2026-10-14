@@ -104,7 +104,11 @@ def _prodi(b: Mapping[str, Any], k: Kebijakan, tahun_default: int | None) -> dic
 
     ada_data = bool(per_jalur) or jalur_dibuka is not None
     sumber = ambil_url(b, wajib=ada_data)
-    tanggal = ambil_tanggal(b, k) if ada_data else None
+    # Verifikasi hanya bermakna bagi prodi yang punya data keketatan. Tanpa daya tampung/peminat
+    # (mis. PTN selain UI) tanggal TIDAK dihitung: prodi tetap belum_diverifikasi dan dinilai
+    # belum_ada_acuan. Tanggal yang terlanjur diisi di CSV diabaikan dan dilaporkan di ringkasan ingest.
+    tanggal = ambil_tanggal(b, k) if per_jalur else None
+    tanggal_diabaikan = not per_jalur and bool(teks(b, "terakhir_diverifikasi"))
 
     tahun_mentah = teks(b, "tahun_siklus")
     tahun = int(tahun_mentah) if tahun_mentah.isdigit() else tahun_default
@@ -114,6 +118,7 @@ def _prodi(b: Mapping[str, Any], k: Kebijakan, tahun_default: int | None) -> dic
         )
 
     return {
+        "tanggal_diabaikan": tanggal_diabaikan,
         "prodi": {
             "id": prodi_id,
             "ptn_id": ptn_id,
@@ -154,6 +159,7 @@ class HasilKatalog:
     ptn_ditolak: set[str] = field(
         default_factory=set
     )  # PTN yang barisnya salah (redam error berantai)
+    tanggal_diabaikan: int = 0  # prodi tanpa data keketatan yang CSV-nya sudah bertanggal
 
 
 def katalog_dari_baris(
@@ -172,6 +178,7 @@ def katalog_dari_baris(
     prodi: dict[str, dict[str, Any]] = {}
     nomor: dict[str, int] = {}
     jalur: list[dict[str, Any]] = []
+    diabaikan = 0
     for no, (jenis, item) in hasil:
         if jenis == "ptn":
             if item["id"] in ptn:
@@ -188,6 +195,7 @@ def katalog_dari_baris(
                 )
                 continue
             prodi[pid] = item["prodi"]
+            diabaikan += item["tanggal_diabaikan"]
             nomor[pid] = no
             jalur.extend(item["prodi_jalur"])
     ditolak = {
@@ -202,4 +210,5 @@ def katalog_dari_baris(
         nomor,
         sorted(galat, key=lambda e: e.baris),
         ditolak,
+        diabaikan,
     )
