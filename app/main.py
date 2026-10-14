@@ -21,6 +21,7 @@ from app.core.config import (
     Settings,
     get_app_config,
     get_settings,
+    terapkan_env_model,
 )
 from app.core.errors import register_exception_handlers
 from app.core.rate_limit import SlidingWindowLimiter
@@ -71,6 +72,7 @@ def create_app(
 ) -> FastAPI:
     settings = settings or get_settings()
     config = config or get_app_config()  # gagal cepat bila config tidak valid
+    config = terapkan_env_model(config, settings)  # LLM_MODEL / EMBED_MODEL menimpa YAML
     if settings.trusted_proxies_list:  # env menimpa YAML (CIDR jaringan docker berbeda per server)
         try:
             rl = RateLimitConfig.model_validate(
