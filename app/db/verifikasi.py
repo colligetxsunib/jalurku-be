@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from sqlalchemy import func, select
+from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session
 
 from app.core.config import ConfigError
@@ -55,6 +55,16 @@ def _baris(db: Session, tabel: str, model, kunci) -> list[TemuanVerifikasi]:
     ]
 
 
+def _punya_data_keketatan():
+    return exists().where(m.ProdiJalur.prodi_id == m.Prodi.id)
+
+
+def jumlah_prodi_tanpa_data(db: Session) -> int:
+    """Prodi tanpa daya tampung/peminat di jalur mana pun. Tampil "belum ada data acuan" dan sengaja
+    TIDAK dihitung sebagai prodi terverifikasi, berapa pun isi kolom tanggal di CSV."""
+    return db.scalar(select(func.count()).select_from(m.Prodi).where(~_punya_data_keketatan())) or 0
+
+
 def cari_belum_terverifikasi(db: Session, *, lengkap: bool = False) -> list[TemuanVerifikasi]:
     """Baris tanpa tanggal verifikasi. `lengkap=True` menyertakan katalog (ptn, prodi, dst)."""
     hasil = _rules(db)
@@ -67,7 +77,15 @@ def cari_belum_terverifikasi(db: Session, *, lengkap: bool = False) -> list[Temu
     )
     if lengkap:
         hasil += _baris(db, "ptn", m.Ptn, lambda b: b.id)
-        hasil += _baris(db, "prodi", m.Prodi, lambda b: b.id)
+        # Prodi tanpa data keketatan (mis. PTN selain UI) tidak dihitung: lihat jumlah_prodi_tanpa_data().
+        hasil += [
+            TemuanVerifikasi("prodi", p.id, "terakhir_diverifikasi kosong")
+            for p in db.scalars(
+                select(m.Prodi).where(
+                    m.Prodi.terakhir_diverifikasi.is_(None), _punya_data_keketatan()
+                )
+            )
+        ]
         hasil += _baris(
             db,
             "prodi_jalur",
@@ -90,13 +108,19 @@ _MODEL = {
 
 
 def hitung_per_tabel(db: Session, *, lengkap: bool = False) -> dict[str, tuple[int, int]]:
-    """{tabel: (belum_terverifikasi, total_baris)} untuk tabel kritis (dan katalog bila lengkap)."""
+    """{tabel: (belum_terverifikasi, total_baris)} untuk tabel kritis (dan katalog bila lengkap).
+
+    Untuk `prodi`, total hanya mencakup prodi yang punya data keketatan."""
     tabel = TABEL_KRITIS + (TABEL_KATALOG if lengkap else ())
     belum = ringkas_per_tabel(cari_belum_terverifikasi(db, lengkap=lengkap))
-    return {
-        t: (belum.get(t, 0), db.scalar(select(func.count()).select_from(_MODEL[t])) or 0)
-        for t in tabel
-    }
+
+    def total(t: str) -> int:
+        kueri = select(func.count()).select_from(_MODEL[t])
+        if t == "prodi":
+            kueri = kueri.where(_punya_data_keketatan())
+        return db.scalar(kueri) or 0
+
+    return {t: (belum.get(t, 0), total(t)) for t in tabel}
 
 
 def ringkas_per_tabel(temuan: list[TemuanVerifikasi]) -> dict[str, int]:
