@@ -23,6 +23,7 @@ from app.llm.client import GeminiClient, NullClient, l2_normalisasi, petakan_err
 from app.llm.errors import (
     LLMGagal,
     LLMKuotaHabis,
+    LLMModelTidakAda,
     LLMTidakDikonfigurasi,
     LLMTimeout,
 )
@@ -222,6 +223,7 @@ def test_generate_tanpa_skema_teks_biasa_dan_respons_kosong_gagal():
     "galat,tipe",
     [
         (gerrors.ClientError(429, {"error": {"message": "quota"}}), LLMKuotaHabis),
+        (gerrors.ClientError(404, {"error": {"message": "model not found"}}), LLMModelTidakAda),
         (gerrors.ClientError(403, {"error": {"message": "key"}}), LLMGagal),
         (gerrors.ServerError(503, {"error": {"message": "down"}}), LLMGagal),
         (gerrors.ServerError(504, {"error": {"message": "slow"}}), LLMTimeout),
@@ -249,6 +251,112 @@ def test_null_client_dan_pemilihan_klien(app_config):
         NullClient().generate("x")
     assert isinstance(buat_client(make_settings(gemini_api_key=""), app_config), NullClient)
     assert isinstance(buat_client(make_settings(gemini_api_key="k"), app_config), GeminiClient)
+
+
+class SDKPerModel:
+    """generate_content gagal/berhasil sesuai nama model; mencatat urutan model yang dicoba."""
+
+    def __init__(self, hasil: dict):
+        self.hasil, self.dicoba = hasil, []
+        self.models = SimpleNamespace(generate_content=self._generate)
+
+    def _generate(self, *, model, contents, config):
+        self.dicoba.append(model)
+        h = self.hasil[model]
+        if isinstance(h, Exception):
+            raise h
+        return SimpleNamespace(text=h)
+
+
+E404 = gerrors.ClientError(404, {"error": {"message": "x"}})
+E429 = gerrors.ClientError(429, {"error": {"message": "x"}})
+
+
+def gemini_cadangan(sdk, cadangan) -> GeminiClient:
+    return GeminiClient(
+        "kunci-palsu",
+        model="utama",
+        embedding_model="gemini-embedding-001",
+        dimensi=768,
+        timeout_detik=5,
+        model_cadangan=cadangan,
+        sdk_client=sdk,
+    )
+
+
+@pytest.mark.parametrize("galat", [E404, E429])
+def test_model_utama_404_atau_429_dicoba_cadangan_berurutan(galat):
+    sdk = SDKPerModel({"utama": galat, "c1": E429, "c2": "dari c2"})
+    assert gemini_cadangan(sdk, ["c1", "c2"]).generate("halo") == "dari c2"
+    assert sdk.dicoba == ["utama", "c1", "c2"]
+
+
+def test_cadangan_tidak_dicoba_bila_utama_berhasil_dan_duplikat_diabaikan():
+    sdk = SDKPerModel({"utama": "ok", "c1": "tidak dipakai"})
+    assert gemini_cadangan(sdk, ["utama", "c1", "c1"]).generate("halo") == "ok"
+    assert sdk.dicoba == ["utama"]
+
+
+def test_error_selain_404_429_tidak_dicoba_ke_cadangan():
+    sdk = SDKPerModel({"utama": gerrors.ServerError(503, {"error": {"message": "x"}}), "c1": "ok"})
+    with pytest.raises(LLMGagal):
+        gemini_cadangan(sdk, ["c1"]).generate("halo")
+    assert sdk.dicoba == ["utama"]
+
+
+def test_semua_model_gagal_melempar_error_terakhir_dan_404_diingat():
+    sdk = SDKPerModel({"utama": E404, "c1": E429})
+    klien = gemini_cadangan(sdk, ["c1"])
+    with pytest.raises(LLMKuotaHabis):
+        klien.generate("halo")
+    with pytest.raises(LLMKuotaHabis):
+        klien.generate("halo")
+    assert sdk.dicoba == ["utama", "c1", "c1"]  # utama 404 tidak dicoba lagi
+    sdk2 = SDKPerModel({"utama": E404})
+    klien2 = gemini_cadangan(sdk2, [])
+    with pytest.raises(LLMModelTidakAda):
+        klien2.generate("halo")
+    with pytest.raises(LLMModelTidakAda):  # semua model sudah ditandai 404
+        klien2.generate("halo")
+    assert sdk2.dicoba == ["utama"]
+
+
+def test_env_model_menimpa_yaml_dan_cadangan_diteruskan(app_config):
+    from app.core.config import terapkan_env_model
+
+    s = make_settings(
+        llm_model=" m-baru ", embed_model="e-baru", llm_model_fallback="a, b ,m-baru,a"
+    )
+    cfg = terapkan_env_model(app_config, s)
+    assert (cfg.llm.model, cfg.embedding.model) == ("m-baru", "e-baru")
+    assert cfg.embedding.dimensi == app_config.embedding.dimensi
+    assert s.llm_model_fallback_list == ["a", "b"]  # tanpa model utama dan duplikat
+    assert terapkan_env_model(app_config, make_settings()) is app_config  # kosong = tidak berubah
+    klien = buat_client(make_settings(gemini_api_key="k", llm_model_fallback="a,b"), app_config)
+    assert klien._urutan_model == [app_config.llm.model, "a", "b"]
+
+
+def test_create_app_menerapkan_env_model(app_config):
+    app = create_app(make_settings(llm_model="m-baru"), app_config, llm_client=FakeLLM())
+    assert app.state.config.llm.model == "m-baru"
+
+
+def test_list_models_mengelompokkan_berdasarkan_aksi():
+    from scripts.list_models import kelompokkan
+
+    def model(nama, *aksi):
+        return SimpleNamespace(name=f"models/{nama}", supported_actions=list(aksi))
+
+    gen, emb = kelompokkan(
+        [
+            model("b-gen", "generateContent", "countTokens"),
+            model("a-gen", "generateContent"),
+            model("e1", "embedContent"),
+            model("lain", "predict"),
+        ]
+    )
+    assert [m.name for m in gen] == ["models/a-gen", "models/b-gen"]
+    assert [m.name for m in emb] == ["models/e1"]
 
 
 def test_l2_normalisasi_vektor_nol_ditolak():

@@ -59,7 +59,7 @@ def test_tiga_sarjana_melanggar_aturan_vokasi_dengan_saran_swap_dari_shortlist(a
     assert all(s["ganti"] in SARJANA[:3] and s["dengan"] in SHORTLIST_VOKASI for s in saran)
     assert saran[0] == {
         "ganti": "ui-ilmu-komputer",
-        "dengan": "ui-v-akuntansi-d3",
+        "dengan": "ui-v-fisioterapi",  # vokasi match; D3 Akuntansi (reach) tidak lebih baik
         "alasan": saran[0]["alasan"],
     }
     assert "memperbaiki" in saran[0]["alasan"]
@@ -235,13 +235,16 @@ def test_saran_swap_menyelamatkan_komposisi_reach_dari_shortlist(app_seed):
             h,
             "SNBT",
             ["ui-v-akuntansi-d3", "ui-v-hubungan-masyarakat"],
-            shortlist=["ui-ilmu-komputer", "ui-v-fisioterapi"],
+            shortlist=[
+                "ui-teknik-elektro",
+                "ui-v-fisioterapi",
+            ],  # Teknik Elektro: safe di antara prodi akademik
         )
     )
     saran = temuan(d, "min_safe")["saran_swap"]
     assert saran, "harus ada saran swap bila shortlist punya kandidat safe"
     assert (
-        saran[0]["dengan"] == "ui-ilmu-komputer"
+        saran[0]["dengan"] == "ui-teknik-elektro"
     )  # kandidat safe memperbaiki min_safe dan maks_reach
     assert {s["ganti"] for s in saran} <= {"ui-v-akuntansi-d3", "ui-v-hubungan-masyarakat"}
 
@@ -278,7 +281,8 @@ def test_override_kosong_tetap_mode_whatif(app_seed, clean_db):
 
 def test_override_mengubah_hasil_komposisi(app_seed):
     h = muat_persona(app_seed, "rani")
-    asli = ok(strategi(app_seed, h, "SNBT", SARJANA[:2]))
+    safe_dua = ["ui-teknik-elektro", "ui-teknik-mesin"]  # keduanya safe untuk Rani
+    asli = ok(strategi(app_seed, h, "SNBT", safe_dua))
     jelek = {
         "nilai_rapor": {
             f"semester_{i}": dict.fromkeys(
@@ -289,7 +293,7 @@ def test_override_mengubah_hasil_komposisi(app_seed):
         },
         "peringkat_sekolah": 290,
     }
-    skenario = ok(strategi(app_seed, h, "SNBT", SARJANA[:2], override=jelek))
+    skenario = ok(strategi(app_seed, h, "SNBT", safe_dua, override=jelek))
     assert asli["komposisi"]["safe"] == 2 and skenario["komposisi"]["reach"] == 2
     assert temuan(skenario, "maks_reach") is not None and temuan(asli, "maks_reach") is None
 

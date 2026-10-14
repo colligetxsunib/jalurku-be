@@ -23,8 +23,9 @@ from app.ingest.umum import Kebijakan
 from app.main import create_app
 from app.services.refdata import muat_refdata
 from tests.conftest import make_settings
+from tests.helpers import SEED_DIR
 
-SEED = ROOT_DIR / "data" / "seed"
+SEED = SEED_DIR  # salinan netral tanpa tanggal verifikasi (lihat tests/helpers.py)
 LONGGAR = Kebijakan(require_verified=False, hari_ini=date(2026, 10, 13))
 KETAT = Kebijakan(require_verified=True, hari_ini=date(2026, 10, 13))
 

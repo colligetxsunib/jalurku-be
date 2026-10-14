@@ -56,7 +56,11 @@ def test_sembilan_sel_matriks_snbp(cfg_app, tier, pita):
     assert h.sel["catatan"] == (cfg_app.teks.catatan_sel[sel.catatan] if sel.catatan else None)
     if sel.catatan:
         assert cfg_app.teks.catatan_sel[sel.catatan] in h.catatan
-    assert h.metode == "matriks_keketatan" and h.indikatif is True and h.label == "indikatif"
+    assert (
+        h.metode == "matriks_keketatan"
+        and h.indikatif is True
+        and h.label == "indikatif, belum dikalibrasi"
+    )
 
 
 def test_tabel_awal_snbp_sama_dengan_prd(cfg_app):
@@ -270,7 +274,7 @@ class TestAnalyzeSNBP:
         p = ik["penilaian"]
         assert (
             p["metode"] == "matriks_keketatan"
-            and p["label"] == "indikatif"
+            and p["label"] == "indikatif, belum dikalibrasi"
             and p["indikatif"] is True
         )
         assert p["tier"]["nilai"] == "kuat" and p["tier"]["sumber"] == "rapor"

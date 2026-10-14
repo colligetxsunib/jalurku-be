@@ -31,11 +31,11 @@ def snapshot(engine: Engine, tabel: str = "profiles") -> list[tuple]:
         return [tuple(r) for r in conn.execute(text(f"SELECT * FROM {tabel} ORDER BY 1"))]
 
 
-def rasio_ui_snbt() -> list[float]:
-    """Rasio peminat/daya tampung semua prodi UI berdata, dihitung mandiri dari CSV."""
+def rasio_ui_snbt(program: str | None = None) -> list[float]:
+    """Rasio peminat/daya tampung prodi UI berdata (opsional satu program), dihitung mandiri dari CSV."""
     hasil = []
     for b in baca_csv(ROOT_DIR / "data" / "seed" / "prodi.csv"):
-        if b["daya_tampung"] and b["peminat_tahun_lalu"]:
+        if b["daya_tampung"] and b["peminat_tahun_lalu"] and program in (None, b["program"]):
             hasil.append(int(b["peminat_tahun_lalu"]) / int(b["daya_tampung"]))
     return hasil
 
@@ -59,7 +59,9 @@ def test_rani_snbt_gate_lolos_lalu_penilaian_indikatif(app_seed):
 
     p = hasil["penilaian"]
     assert (
-        p["metode"] == "matriks_keketatan" and p["indikatif"] is True and p["label"] == "indikatif"
+        p["metode"] == "matriks_keketatan"
+        and p["indikatif"] is True
+        and p["label"] == "indikatif, belum dikalibrasi"
     )
     assert p["kategori"] in ("reach", "match", "safe")
     assert p["keyakinan"] == "rendah"  # tier dari rapor hanya proksi
@@ -78,16 +80,35 @@ def test_rani_snbt_gate_lolos_lalu_penilaian_indikatif(app_seed):
     }
 
 
-def test_batas_pita_dihitung_dari_sebaran_data_seed(app_seed):
+@pytest.mark.parametrize(
+    "prodi, program, kelompok, n",
+    [
+        (IK, "akademik", "program:akademik", 16),
+        ("ui-v-akuntansi-d3", "vokasi", "program:vokasi", 15),
+    ],
+)
+def test_batas_pita_dihitung_dari_sebaran_data_seed_per_program(
+    app_seed, prodi, program, kelompok, n
+):
+    """Keputusan tim 14 Okt 2026: persentil SNBT dihitung terpisah untuk akademik dan vokasi."""
     h = muat_persona(app_seed, "rani")
-    basis = satu(analyze(app_seed, h, [{"prodi_id": IK, "jalur": ["SNBT"]}]))["penilaian"]["pita"][
-        "basis"
-    ]
-    rasio = sorted(rasio_ui_snbt())
+    basis = satu(analyze(app_seed, h, [{"prodi_id": prodi, "jalur": ["SNBT"]}]))["penilaian"][
+        "pita"
+    ]["basis"]
+    rasio = sorted(rasio_ui_snbt(program))
     q = statistics.quantiles(rasio, n=100, method="inclusive")
-    assert basis["metode"] == "persentil" and basis["n_prodi"] == len(rasio) == 31
+    assert basis["metode"] == "persentil" and basis["kelompok"] == kelompok
+    assert basis["n_prodi"] == len(rasio) == n
     assert basis["persentil"] == [33, 67]
     assert basis["batas_rasio"] == [pytest.approx(q[32], abs=0.01), pytest.approx(q[66], abs=0.01)]
+
+
+def test_vokasi_tidak_lagi_menggeser_batas_prodi_akademik(app_seed):
+    """Dengan kelompok 'semua', batas atas ~71 membuat IK jatuh ke pita rendah; kini per program."""
+    h = muat_persona(app_seed, "rani")
+    pita = satu(analyze(app_seed, h, [{"prodi_id": IK, "jalur": ["SNBT"]}]))["penilaian"]["pita"]
+    assert pita["basis"]["batas_rasio"][1] < 40  # batas atas akademik, bukan ~71 campuran vokasi
+    assert pita["nilai"] == "sedang"
 
 
 def test_pita_dan_kategori_konsisten_dengan_rasio_prodi(app_seed):

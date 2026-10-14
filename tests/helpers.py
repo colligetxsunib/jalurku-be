@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import csv
+import io
 import json
 import shutil
+import tempfile
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -12,7 +14,35 @@ from fastapi.testclient import TestClient
 from app.core.config import ROOT_DIR
 
 CONSENT = {"consent": True, "consent_version": "2026-10-13"}
-SEED_DIR = ROOT_DIR / "data" / "seed"
+SEED_ASLI = ROOT_DIR / "data" / "seed"
+
+
+def _seed_netral() -> tempfile.TemporaryDirectory:
+    """Salinan data/seed dengan SEMUA terakhir_diverifikasi dikosongkan.
+
+    Tes perilaku mesin memakai ini agar hasilnya tidak bergantung pada apakah tim data sudah mengisi
+    tanggal verifikasi. Tes yang memeriksa data asli memakai SEED_ASLI.
+    """
+    tmp = tempfile.TemporaryDirectory(prefix="jalurku-seed-netral-")
+    for sumber in SEED_ASLI.glob("*.csv"):
+        mentah = sumber.read_bytes()
+        teks = mentah.decode("utf-8-sig")
+        pembaca = csv.DictReader(io.StringIO(teks, newline=""))
+        if not pembaca.fieldnames or "terakhir_diverifikasi" not in pembaca.fieldnames:
+            (Path(tmp.name) / sumber.name).write_bytes(mentah)
+            continue
+        baris = list(pembaca)
+        with (Path(tmp.name) / sumber.name).open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=pembaca.fieldnames, lineterminator="\n")
+            w.writeheader()
+            for b in baris:
+                b["terakhir_diverifikasi"] = ""
+                w.writerow(b)
+    return tmp
+
+
+_SEED_NETRAL = _seed_netral()  # dibersihkan otomatis saat proses tes berakhir
+SEED_DIR = Path(_SEED_NETRAL.name)
 PERSONA_DIR = ROOT_DIR / "config" / "personas"
 
 

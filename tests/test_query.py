@@ -146,6 +146,8 @@ def ok(r) -> dict:
         ("Saya lulus tahun 2023, bisakah ikut SNBT 2026?", True),
         ("Apa peluang saya diterima di UI?", True),
         ("Saya memenuhi syarat SNBT tidak?", True),
+        ("Sekolah saya akreditasi A dan peringkat 30 persen, apakah saya masuk kuota SNBP?", True),
+        ("Berapa kuota siswa eligible SNBP untuk sekolah akreditasi A?", False),  # aturan umum
         ("Berapa jumlah pilihan program studi di SNBP 2026?", False),
         ("Dokumen apa saja yang diperlukan untuk SNBP?", False),
         (
