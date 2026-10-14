@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Versi** | 1.0 (baseline, **dibekukan 13 Oktober 2026**; disusun dari "PRD Backend JalurKu v0.2") |
+| **Versi** | 1.1 (revisi 14 Oktober 2026 atas baseline 1.0 yang **dibekukan 13 Oktober 2026**; disusun dari "PRD Backend JalurKu v0.2"). Perubahan dan keterbatasan v1.1 ada di bagian 18 |
 | **Status** | Dibekukan untuk implementasi. Scope hackathon dipotong untuk 3 hari |
 | **Deadline** | 16 Oktober 2026 |
 | **Stack backend** | Python 3.11+, FastAPI, Pydantic, PostgreSQL + pgvector, Gemini via Google AI Studio API |
@@ -820,6 +820,20 @@ Yang **tidak boleh dipotong**: gate, penilaian SNBT, sesi + consent + hapus data
 | Penilaian SNBP | Matriks 3×3 (tier siswa × pita keketatan) di config, menggantikan rumus margin | 8.2 |
 | Lampiran A | Semua usulan diikuti, dengan perubahan di #5, #6, #13, #14, #16 | Lampiran A |
 
+**Diputuskan 14 Oktober 2026 (tim data, atas laporan kemajuan implementasi):**
+
+| Topik | Keputusan | Lokasi |
+|---|---|---|
+| Verifikasi data | `terakhir_diverifikasi` hanya diisi manusia. Prodi tanpa daya tampung/peminat (PTN selain UI) **tidak dihitung terverifikasi** dan tampil `belum_ada_acuan` | 8.2, 12 |
+| Pita keketatan SNBT | Persentil 33/67 dihitung **per program** (`kelompok: program`, akademik dan vokasi terpisah), menggantikan `semua` | 8.2 |
+| Kalibrasi | Nilai awal di `config/app.yaml` dipakai apa adanya; setiap penilaian berlabel "indikatif, belum dikalibrasi". `skala_skor_tryout` dinonaktifkan: skor tryout tidak memengaruhi kategori | 8.2, 18 |
+| Cakupan data demo | Demo hanya UI. Keketatan SNBP, sembilan PTN lain, dan `acuan_skor` dikosongkan; yang kosong tampil `belum_ada_acuan` | 12, 18 |
+| Eksplorasi | Data `tag_minat`, `mapel_penentu`, `profesi.csv` tidak memblokir pekerjaan lain. Draft klasifikasi rumpun di config berlabel belum diverifikasi; bila perlu `/explore` turun ke penelusuran katalog | 7.3b, 8.3 |
+| Golden set RAG | `data/seed/golden_set.csv` (23 pertanyaan) menggantikan draf 12 pertanyaan. Kolom `halaman` diisi dengan mencari teks jawaban di PDF; yang tidak ditemukan ditandai | 14 |
+| Konfirmasi hukum data anak | Tidak dikerjakan sebelum submit. Menjadi **syarat peluncuran nyata**. UI menampilkan catatan "demo memakai data fiktif" (API mengirim `pemberitahuan` di respons sesi) | 13, 18 |
+| Verifikasi persona | Hanya persona Rani yang diverifikasi pemilik data. Persona lain dan `config/golden/gate.json` tetap `hasil_terverifikasi: false` | 13, 18 |
+| Provinsi UI | Tetap Jawa Barat sampai dicek tim data; bila berubah (mis. DKI Jakarta), keempat persona ikut diganti | 12 |
+
 **Masih terbuka.** Semua butir di bawah adalah **data atau nilai config** dan tidak memblokir penulisan kode, kecuali yang ditandai.
 
 | # | Pertanyaan terbuka | Pemilik | Memblokir kode? |
@@ -843,6 +857,32 @@ Yang **tidak boleh dipotong**: gate, penilaian SNBT, sesi + consent + hapus data
 | 13 Okt 2026 | 0.2 | PRD sumber (draft awal tim) |
 | 13 Okt 2026 | 0.3 | Penyusunan ulang, ID FR dipertahankan; kriteria penerimaan, spesifikasi API, dan Lampiran A ditambahkan |
 | 13 Okt 2026 | 1.0 | **Pembekuan.** Keputusan embedding, ringkasan cetak/PDF, consent anak, `/query` mode `jelaskan` dengan konteks dari server, `X-Admin-Key`, persona demo, dan matriks SNBP 3×3 dimasukkan. Rumus margin SNBP dihapus |
+| 14 Okt 2026 | 1.1 | **Tindak lanjut sembilan keputusan pemilik data.** Pita keketatan SNBT dihitung per program; label penilaian "indikatif, belum dikalibrasi"; skala skor tryout dinonaktifkan; prodi tanpa daya tampung tidak dihitung terverifikasi; golden set RAG memakai 23 baris dengan pengisian halaman dari PDF; catatan "demo memakai data fiktif" dikirim lewat API; persona Rani dan Dimas diperbarui sesuai hasil golden. Rincian di §18.1 dan §18.2 |
+
+### 18.1 Perubahan kontrak dan skema sejak v1.0
+
+- Profil: field baru `punya_nilai_tka`, `sekolah_punya_npsn`, `sekolah_kurikulum_nasional`, `pakai_erapor`, `rapor_lengkap_di_pdss`, `wni_punya_nik`, `lulus_snbp_3_tahun_terakhir`, `sudah_ikut_utbk_tahun_siklus`, `paket_c_usia_per_1_juli`, `konfirmasi_syarat_prodi`.
+- Profil: `peringkat_kelas` menjadi `peringkat_sekolah` (ditambah `jumlah_siswa_angkatan`); `jenis_sekolah` menjadi `jenjang_sekolah`.
+- Basis data: kolom `jenjang` dan `program` pada prodi; tabel baru `prodi_jalur`, `ketentuan`, `llm_cache`.
+- Gate: status baru `tidak_berlaku`. Strategi: tingkat temuan baru `pelanggaran`.
+- Ingest: tipe baru `ketentuan` dan `profesi`.
+- API: `POST /explore` (parameter `jalur`, `kelayakan`); field `pemberitahuan` pada `POST /session` dan `GET /session`; narasi LLM opsional pada `/summary`; `POST /admin/dokumen/{id}/berkas`.
+- Konfigurasi dan deploy: variabel `REQUIRE_VERIFIED` (dengan pemeriksaan saat startup) dan `TRUSTED_PROXIES`; proksi balik memakai nginx (bukan Caddy); `jalur_dibuka` bersifat informasional.
+- Penilaian: `snbt.pita_keketatan.kelompok` menjadi `program`; `label_penilaian` baru ("indikatif, belum dikalibrasi"); `skala_skor_tryout` bernilai null (nonaktif karena skor tryout tidak memengaruhi kategori).
+
+### 18.2 Keterbatasan yang diketahui (v1.1)
+
+- **Kalibrasi belum dilakukan.** Ambang dan pita memakai nilai bawaan. Semua kategori reach/match/safe berlabel "indikatif, belum dikalibrasi".
+- **Skor tryout tidak memengaruhi kategori.** Skala skor tryout dinonaktifkan.
+- **Data keketatan hanya UI SNBT** (31 prodi). Keketatan SNBP, sembilan PTN lain, dan `acuan_skor_snbt.csv` dikosongkan. Hasilnya `belum_ada_acuan` dan berstatus `belum_diverifikasi`. Demo hanya UI.
+- **Tier SNBT memakai proksi rapor** dengan keyakinan rendah.
+- **Status verifikasi per berkas.** Per 14 Okt 2026, 4 dari 6 CSV bertanggal (`config_ketentuan`, `dokumen_wajib`, `ptn`, `rule_gate`). `prodi.csv` dan `dokumen_rag_metadata.csv` belum bertanggal. Tanggal hanya diisi manusia.
+- **Verifikasi persona.** Pemilik data memverifikasi persona Rani dan mengisi `hasil_terverifikasi` sendiri. Persona Dimas, Budi, Sinta, dan 33 kasus `gate.json` tetap `hasil_terverifikasi: false`; hasil golden berfungsi sebagai kunci regresi, bukan bukti kebenaran.
+- **RAG dan Gemini belum dijalankan dengan kunci nyata.** Halaman pada golden RAG baru terisi sebagian; sisanya berstatus perkiraan atau tidak ditemukan dan perlu dicek manual.
+- **Hukum data anak.** Konfirmasi hukum belum dikerjakan sebelum submit. Ini **syarat sebelum peluncuran nyata**. Sampai saat itu UI menampilkan catatan "demo memakai data fiktif".
+- **Eksplorasi** memakai klasifikasi rumpun awal (draft, belum diverifikasi). Data `tag_minat`, `mapel_penentu`, dan `profesi.csv` dikerjakan paling akhir.
+- **Provinsi UI** sementara Jawa Barat sampai dicek pemilik data.
+- **Deploy** dengan Let's Encrypt di VPS belum diuji; satu worker.
 
 ---
 
