@@ -45,6 +45,60 @@ rag:
 minat:
   dimensi: [realistis, investigatif, artistik, sosial, enterprising, konvensional]
 
+# ---------------------------------------------------------------------------------------------
+# Tes minat RIASEC (PRD 8.3, FR-E2). Siswa menilai aktivitas pada skala Likert; skor dinormalisasi
+# menjadi vektor `minat` yang disimpan di profil dan dipakai /explore (deterministik, tanpa LLM).
+# Item diadaptasi dari O*NET Interest Profiler (U.S. Department of Labor, DOMAIN PUBLIK) ke bahasa
+# Indonesia dan konteks siswa SMA; lihat docs/riset-riasec.md. Teks di bawah DRAFT riset, belum
+# diverifikasi tim data/guru BK (PRD bagian 12). Tiap dimensi punya 4 item (24 total) agar tes
+# cepat (sejalan target alur ~10 menit). Tambah/ubah item cukup di sini tanpa menyentuh kode.
+# ---------------------------------------------------------------------------------------------
+riasec:
+  aktif: true
+  versi_instrumen: riasec-id-v1
+  sumber: "Adaptasi O*NET Interest Profiler (U.S. DOL, domain publik)"
+  min_terjawab: 0                  # 0 = boleh parsial; naikkan untuk mewajibkan kelengkapan
+  skala:
+    min: 0
+    maks: 4
+    label:
+      "0": Sangat tidak suka
+      "1": Tidak suka
+      "2": Netral
+      "3": Suka
+      "4": Sangat suka
+  item:
+    # Realistic (R): benda, mesin, alat, aktivitas fisik, luar ruangan
+    - {id: r1, dimensi: realistis, teks: Memperbaiki alat elektronik atau mesin}
+    - {id: r2, dimensi: realistis, teks: Merakit perabot atau barang dari petunjuk}
+    - {id: r3, dimensi: realistis, teks: Bekerja di luar ruangan atau di lapangan}
+    - {id: r4, dimensi: realistis, teks: Mengoperasikan peralatan atau mesin}
+    # Investigative (I): meneliti, menganalisis, memecahkan masalah
+    - {id: i1, dimensi: investigatif, teks: Melakukan percobaan sains di laboratorium}
+    - {id: i2, dimensi: investigatif, teks: Mempelajari cara kerja suatu fenomena alam}
+    - {id: i3, dimensi: investigatif, teks: Memecahkan soal matematika atau logika yang rumit}
+    - {id: i4, dimensi: investigatif, teks: Menganalisis data untuk menemukan pola}
+    # Artistic (A): mencipta, mendesain, menulis, berekspresi
+    - {id: a1, dimensi: artistik, teks: Menggambar, melukis, atau mendesain sesuatu}
+    - {id: a2, dimensi: artistik, teks: Menulis cerita, puisi, atau naskah}
+    - {id: a3, dimensi: artistik, teks: Bermain musik atau menciptakan lagu}
+    - {id: a4, dimensi: artistik, teks: Merancang tampilan visual seperti poster atau konten}
+    # Social (S): membantu, mengajar, merawat, melayani orang
+    - {id: s1, dimensi: sosial, teks: Mengajari teman memahami pelajaran}
+    - {id: s2, dimensi: sosial, teks: Membantu orang menyelesaikan masalah pribadi}
+    - {id: s3, dimensi: sosial, teks: Menjadi relawan kegiatan sosial}
+    - {id: s4, dimensi: sosial, teks: Merawat atau mendampingi orang yang membutuhkan}
+    # Enterprising (E): memimpin, membujuk, menjual, memulai usaha
+    - {id: e1, dimensi: enterprising, teks: Memimpin sebuah tim atau proyek}
+    - {id: e2, dimensi: enterprising, teks: Membujuk orang untuk menyetujui ide saya}
+    - {id: e3, dimensi: enterprising, teks: Memulai dan mengelola usaha kecil}
+    - {id: e4, dimensi: enterprising, teks: Berbicara meyakinkan di depan banyak orang}
+    # Conventional (C): data, keteraturan, prosedur, ketelitian
+    - {id: c1, dimensi: konvensional, teks: Menyusun data atau catatan dengan rapi}
+    - {id: c2, dimensi: konvensional, teks: Mengikuti prosedur dan aturan yang jelas}
+    - {id: c3, dimensi: konvensional, teks: Mengelola jadwal, anggaran, atau arsip}
+    - {id: c4, dimensi: konvensional, teks: Mengerjakan tugas yang butuh ketelitian detail}
+
 # Batas validasi profil (FR-P2). Tahun lulus diukur terhadap tahun siklus pendaftaran aktif.
 profil:
   tahun_lulus_mundur: 15

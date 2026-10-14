@@ -123,6 +123,39 @@ class MinatConfig(_Strict):
     dimensi: list[str] = Field(min_length=1)
 
 
+class RiasecItem(_Strict):
+    """Satu pernyataan aktivitas tes minat. `id` stabil, `dimensi` harus anggota minat.dimensi."""
+
+    id: str = Field(min_length=1, max_length=64, pattern=r"^[a-z][a-z0-9_]*$")
+    dimensi: str = Field(min_length=1)
+    teks: str = Field(min_length=1, max_length=300)
+
+
+class RiasecSkala(_Strict):
+    """Skala Likert jawaban (inklusif). Label hanya untuk tampilan frontend."""
+
+    min: int = Field(default=0)
+    maks: int = Field(default=4)
+    label: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _urut(self) -> RiasecSkala:
+        if self.min >= self.maks:
+            raise ValueError("skala.min harus lebih kecil dari skala.maks")
+        return self
+
+
+class RiasecConfig(_Strict):
+    """Instrumen tes minat RIASEC (PRD 8.3, FR-E2). Item dari O*NET IP (domain publik), adaptasi ID."""
+
+    aktif: bool = True
+    versi_instrumen: str = Field(min_length=1, max_length=64)
+    sumber: str = Field(default="", max_length=300)
+    min_terjawab: int = Field(default=0, ge=0)  # 0 = boleh parsial
+    skala: RiasecSkala = Field(default_factory=RiasecSkala)
+    item: list[RiasecItem] = Field(min_length=1)
+
+
 class ProfilConfig(_Strict):
     tahun_lulus_mundur: int = Field(ge=0)
     tahun_lulus_maju: int = Field(ge=0)
@@ -335,6 +368,7 @@ class AppConfig(_Strict):
     embedding: EmbeddingConfig
     rag: RagConfig
     minat: MinatConfig
+    riasec: RiasecConfig
     profil: ProfilConfig
     snbp: JalurPenilaianConfig
     snbt: JalurPenilaianConfig
@@ -352,6 +386,17 @@ class AppConfig(_Strict):
                 raise ValueError(
                     f"explore.rumpun.{nama}.minat memakai dimensi tak dikenal: {', '.join(asing)}"
                 )
+        return self
+
+    @model_validator(mode="after")
+    def _instrumen_riasec_konsisten(self) -> AppConfig:
+        """Instrumen RIASEC harus memakai dimensi yang dikenal dan menutup semua dimensi."""
+        from app.domain.riasec import ItemRiasec, validasi_instrumen
+
+        item = [ItemRiasec(id=i.id, dimensi=i.dimensi, teks=i.teks) for i in self.riasec.item]
+        galat = validasi_instrumen(item, self.minat.dimensi)
+        if galat:
+            raise ValueError("instrumen riasec tidak konsisten: " + "; ".join(galat))
         return self
 
     def penilaian(self, jalur: str) -> JalurPenilaianConfig:
