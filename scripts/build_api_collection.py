@@ -89,19 +89,20 @@ R_SESI = Req(
     "POST",
     "/session",
     "Membuat sesi tamu. `consent: true` wajib. Token disimpan otomatis ke variabel koleksi `token` "
-    "dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam).",
+    "dan dipakai semua request lain. Sesi berlaku sesuai TTL (bawaan 24 jam). Respons memuat "
+    + "`pemberitahuan` (catatan demo data fiktif) yang wajib ditampilkan di UI.",
     body={"consent": True, "consent_version": "{{consentVersion}}"},
     status=201,
     auth="none",
     tangkap=(("token", "token"),),
-    kunci=("token", "expires_at", "sisa_detik"),
+    kunci=("token", "expires_at", "sisa_detik", "pemberitahuan"),
 )
 R_STATUS = Req(
     "Status sesi",
     "GET",
     "/session",
     "Waktu dibuat, consent, dan sisa detik sebelum sesi kedaluwarsa.",
-    kunci=("sisa_detik", "expires_at"),
+    kunci=("sisa_detik", "expires_at", "pemberitahuan"),
 )
 R_HAPUS = Req(
     "Hapus data saya",

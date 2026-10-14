@@ -4,6 +4,9 @@ Dipakai hari 1 untuk memastikan model tersedia (PRD bagian 17 #7). Kuota per mod
 di Google AI Studio, jadi cek di sana juga.
 
     uv run python -m scripts.check_gemini
+
+Nama model dibaca dari LLM_MODEL, LLM_MODEL_FALLBACK, dan EMBED_MODEL di .env (bila kosong,
+dari config/app.yaml). Daftar nama yang valid: uv run python -m scripts.list_models
 """
 
 from __future__ import annotations
@@ -51,15 +54,21 @@ def main() -> int:
         print(f"  GAGAL: {type(exc).__name__}: {exc}", file=sys.stderr)
         gagal += 1
 
-    print(f"Generate: model={cfg.llm.model}")
-    try:
-        res = client.models.generate_content(
-            model=cfg.llm.model, contents="Jawab satu kalimat: apa kepanjangan SNBP?"
-        )
-        print(f"  OK: {(res.text or '').strip()[:200]}")
-    except Exception as exc:  # noqa: BLE001
-        print(f"  GAGAL: {type(exc).__name__}: {exc}", file=sys.stderr)
-        gagal += 1
+    # Utama wajib berhasil; cadangan hanya diperiksa (gagal = peringatan, bukan kegagalan).
+    for urut, nama in enumerate([cfg.llm.model, *settings.llm_model_fallback_list]):
+        label = "utama" if urut == 0 else "cadangan"
+        print(f"Generate ({label}): model={nama}")
+        try:
+            res = client.models.generate_content(
+                model=nama, contents="Jawab satu kalimat: apa kepanjangan SNBP?"
+            )
+            print(f"  OK: {(res.text or '').strip()[:200]}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"  GAGAL: {type(exc).__name__}: {exc}", file=sys.stderr)
+            if urut == 0:
+                gagal += 1
+    if gagal:
+        print("Cari nama model yang tersedia: uv run python -m scripts.list_models")
 
     print("Selesai. Cek batas permintaan (RPM/RPD) kedua model di Google AI Studio.")
     return 1 if gagal else 0
