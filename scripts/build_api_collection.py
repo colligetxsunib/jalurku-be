@@ -203,6 +203,35 @@ R_PRODI_DETAIL = Req(
     kunci=("id", "nama"),
 )
 
+# Jawaban contoh tes minat RIASEC (profil dominan investigatif). id item dari config/app.yaml.
+_RIASEC_JAWABAN = {
+    "r1": 1, "r2": 1, "r3": 0, "r4": 1,
+    "i1": 4, "i2": 4, "i3": 4, "i4": 4,
+    "a1": 1, "a2": 0, "a3": 1, "a4": 1,
+    "s1": 2, "s2": 2, "s3": 1, "s4": 2,
+    "e1": 2, "e2": 2, "e3": 1, "e4": 2,
+    "c1": 3, "c2": 3, "c3": 2, "c4": 3,
+}
+R_RIASEC_QUESTIONS = Req(
+    "Daftar pertanyaan tes minat",
+    "GET",
+    "/riasec/questions",
+    "Instrumen tes minat RIASEC (item aktivitas + skala Likert) untuk ditampilkan. Publik: tidak "
+    "butuh token dan tidak memuat kunci skoring.",
+    auth="none",
+    kunci=("versi_instrumen", "skala", "dimensi", "item"),
+)
+R_RIASEC_SUBMIT = Req(
+    "Kirim jawaban tes minat",
+    "POST",
+    "/riasec/submit",
+    "Menghitung vektor minat dari jawaban (deterministik, tanpa LLM) dan, bila `simpan: true`, "
+    "menuliskannya ke profil sehingga langsung dipakai `/explore`. id item mengikuti "
+    "`/riasec/questions`; nilai sesuai skala (0..4).",
+    body={"jawaban": _RIASEC_JAWABAN, "simpan": True},
+    kunci=("skor_norm", "holland_code", "dimensi_teratas", "tersimpan"),
+)
+
 R_EXPLORE = Req(
     "Rekomendasi rumpun",
     "POST",
@@ -572,17 +601,23 @@ def semua_folder() -> tuple[Folder, ...]:
             (R_PTN, R_PRODI, R_PRODI_VOKASI, R_PRODI_DETAIL),
         ),
         Folder(
-            "05 Eksplorasi",
+            "05 Tes minat (RIASEC)",
+            "Tes minat Holland/RIASEC: ambil pertanyaan lalu kirim jawaban. Hasilnya vektor minat yang "
+            "disimpan ke profil dan dipakai Eksplorasi. Deterministik, tanpa LLM.",
+            (R_RIASEC_QUESTIONS, R_RIASEC_SUBMIT),
+        ),
+        Folder(
+            "06 Eksplorasi",
             "Rekomendasi rumpun, deterministik tanpa LLM.",
             (R_EXPLORE, R_EXPLORE_JALUR),
         ),
         Folder(
-            "06 Analisis",
+            "07 Analisis",
             "Gate lalu penilaian reach/match/safe.",
             (R_ANALYZE, R_ANALYZE_DIMAS, R_ANALYZE_WHATIF),
         ),
         Folder(
-            "07 Strategi",
+            "08 Strategi",
             "Evaluasi komposisi pilihan per jalur, what-if, dan penyimpanan.",
             (
                 R_STRATEGI_EVAL,
@@ -593,24 +628,24 @@ def semua_folder() -> tuple[Folder, ...]:
                 R_STRATEGI_SIMPAN_SNBT,
             ),
         ),
-        Folder("08 Ringkasan", "Perlu strategi tersimpan.", (R_RINGKAS, R_RINGKAS_ID)),
+        Folder("09 Ringkasan", "Perlu strategi tersimpan.", (R_RINGKAS, R_RINGKAS_ID)),
         Folder(
-            "09 Tanya jawab",
+            "10 Tanya jawab",
             "Setiap request ini dibatasi 10 per menit per sesi. Tanpa kunci Gemini semuanya tetap 200 "
             "dengan teks cadangan.",
             (R_Q_TANYA, R_Q_KEPUTUSAN, R_Q_JELASKAN, R_Q_LUAR),
         ),
         Folder(
-            "10 Admin",
+            "11 Admin",
             "Hanya dengan header `X-Admin-Key` (isi variabel environment `adminKey`).",
             (R_ADMIN_PROFESI, R_ADMIN_BERKAS),
         ),
         Folder(
-            "11 Kasus gagal",
+            "12 Kasus gagal",
             "Contoh respons error: consent, token, validasi, dan 404.",
             (R_GAGAL_CONSENT, R_GAGAL_TOKEN, R_GAGAL_422, R_GAGAL_404, R_GAGAL_EXTRA),
         ),
-        Folder("12 Akhiri sesi", "Hapus data sesi aktif.", (R_HAPUS,)),
+        Folder("13 Akhiri sesi", "Hapus data sesi aktif.", (R_HAPUS,)),
     )
 
 

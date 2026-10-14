@@ -1734,7 +1734,99 @@
       ]
     },
     {
-      "name": "05 Eksplorasi",
+      "name": "05 Tes minat (RIASEC)",
+      "description": "Tes minat Holland/RIASEC: ambil pertanyaan lalu kirim jawaban. Hasilnya vektor minat yang disimpan ke profil dan dipakai Eksplorasi. Deterministik, tanpa LLM.",
+      "item": [
+        {
+          "name": "Daftar pertanyaan tes minat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat versi_instrumen, skala, dimensi, item\", function () { pm.expect(j).to.include.keys(\"versi_instrumen\", \"skala\", \"dimensi\", \"item\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/riasec/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "riasec",
+                "questions"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Instrumen tes minat RIASEC (item aktivitas + skala Likert) untuk ditampilkan. Publik: tidak butuh token dan tidak memuat kunci skoring."
+          },
+          "response": []
+        },
+        {
+          "name": "Kirim jawaban tes minat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat skor_norm, holland_code, dimensi_teratas, tersimpan\", function () { pm.expect(j).to.include.keys(\"skor_norm\", \"holland_code\", \"dimensi_teratas\", \"tersimpan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/riasec/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "riasec",
+                "submit"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jawaban\": {\n    \"r1\": 1,\n    \"r2\": 1,\n    \"r3\": 0,\n    \"r4\": 1,\n    \"i1\": 4,\n    \"i2\": 4,\n    \"i3\": 4,\n    \"i4\": 4,\n    \"a1\": 1,\n    \"a2\": 0,\n    \"a3\": 1,\n    \"a4\": 1,\n    \"s1\": 2,\n    \"s2\": 2,\n    \"s3\": 1,\n    \"s4\": 2,\n    \"e1\": 2,\n    \"e2\": 2,\n    \"e3\": 1,\n    \"e4\": 2,\n    \"c1\": 3,\n    \"c2\": 3,\n    \"c3\": 2,\n    \"c4\": 3\n  },\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Menghitung vektor minat dari jawaban (deterministik, tanpa LLM) dan, bila `simpan: true`, menuliskannya ke profil sehingga langsung dipakai `/explore`. id item mengikuti `/riasec/questions`; nilai sesuai skala (0..4)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Eksplorasi",
       "description": "Rekomendasi rumpun, deterministik tanpa LLM.",
       "item": [
         {
@@ -1836,7 +1928,7 @@
       ]
     },
     {
-      "name": "06 Analisis",
+      "name": "07 Analisis",
       "description": "Gate lalu penilaian reach/match/safe.",
       "item": [
         {
@@ -1986,7 +2078,7 @@
       ]
     },
     {
-      "name": "07 Strategi",
+      "name": "08 Strategi",
       "description": "Evaluasi komposisi pilihan per jalur, what-if, dan penyimpanan.",
       "item": [
         {
@@ -2284,7 +2376,7 @@
       ]
     },
     {
-      "name": "08 Ringkasan",
+      "name": "09 Ringkasan",
       "description": "Perlu strategi tersimpan.",
       "item": [
         {
@@ -2386,7 +2478,7 @@
       ]
     },
     {
-      "name": "09 Tanya jawab",
+      "name": "10 Tanya jawab",
       "description": "Setiap request ini dibatasi 10 per menit per sesi. Tanpa kunci Gemini semuanya tetap 200 dengan teks cadangan.",
       "item": [
         {
@@ -2585,7 +2677,7 @@
       ]
     },
     {
-      "name": "10 Admin",
+      "name": "11 Admin",
       "description": "Hanya dengan header `X-Admin-Key` (isi variabel environment `adminKey`).",
       "item": [
         {
@@ -2709,7 +2801,7 @@
       ]
     },
     {
-      "name": "11 Kasus gagal",
+      "name": "12 Kasus gagal",
       "description": "Contoh respons error: consent, token, validasi, dan 404.",
       "item": [
         {
@@ -2936,7 +3028,7 @@
       ]
     },
     {
-      "name": "12 Akhiri sesi",
+      "name": "13 Akhiri sesi",
       "description": "Hapus data sesi aktif.",
       "item": [
         {
