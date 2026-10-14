@@ -11,6 +11,7 @@ tidak dihitung dalam rasio, tetapi dilaporkan sebagai temuan tersendiri.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -275,7 +276,8 @@ def evaluasi(
                     "maks_reach",
                     "peringatan",
                     f"{k['reach']} dari {dinilai} pilihan yang dinilai berkategori reach "
-                    f"(batas {aturan.maks_rasio_reach:.0%}). Seimbangkan dengan pilihan match atau safe.",
+                    f"(batas maksimal {math.floor(aturan.maks_rasio_reach * dinilai + 1e-9)}). "
+                    "Seimbangkan dengan pilihan match atau safe.",
                 )
             )
     else:
