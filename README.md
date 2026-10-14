@@ -161,7 +161,7 @@ data/
 api-collection/  Postman Collection v2.1 + environment (dihasilkan scripts/build_api_collection.py)
 deploy/          docker compose produksi, nginx, skrip deploy dan sertifikat
 scripts/         CLI: ingest, ingest_docs, check_verified, run_golden_set, smoke_test, ...
-tests/           pytest (845 tes), golden_gate/, golden_rag/
+tests/           pytest (864 tes), golden_gate/, golden_rag/
 ```
 
 Aturan penting kode: `app/domain/` tidak boleh meng-import LLM, RAG, SQLAlchemy, atau FastAPI (dijaga tes). Hanya `app/llm/client.py` yang boleh meng-import SDK Google (dijaga tes).
@@ -202,6 +202,7 @@ Perintah berguna:
 | Lint dan format | `uv run ruff check . --fix` lalu `uv run ruff format .` |
 | Muat sebagian data | `uv run python -m scripts.ingest --tipe katalog acuan` |
 | Coba gate dari terminal (tanpa DB) | `uv run python -m scripts.try_gate config/personas/budi.json SNBT` |
+| Daftar model Gemini yang tersedia untuk kunci Anda | `uv run python -m scripts.list_models` |
 | Cek kunci Gemini dan model | `uv run python -m scripts.check_gemini` |
 | Bangun ulang API collection | `uv run python -m scripts.build_api_collection` |
 | Buat sesi persona untuk uji manual | `uv run python -m scripts.seed_personas --persona rani --simpan-strategi` |
@@ -355,7 +356,7 @@ Faktor yang tidak diketahui dikeluarkan dan bobotnya dinormalisasi ulang, lalu d
 
 **Langkah 2, pita keketatan (rendah / sedang / tinggi).** Rasio = peminat tahun lalu / daya tampung. Batas pita:
 
-- **SNBT**: dari **persentil 33 dan 67** sebaran rasio semua prodi di data. UI menyebut "relatif terhadap prodi yang ada di data". Perlu minimal 8 prodi pembanding, kalau kurang hasilnya `belum_ada_acuan`.
+- **SNBT**: dari **persentil 33 dan 67** sebaran rasio prodi di data, dihitung **per program** (akademik dan vokasi terpisah, `snbt.pita_keketatan.kelompok: program`). UI menyebut "relatif terhadap prodi yang ada di data". Perlu minimal 8 prodi pembanding per kelompok, kalau kurang hasilnya `belum_ada_acuan`.
 - **SNBP**: batas tetap 5 dan 15 (dapat diganti ke persentil lewat config).
 
 **Langkah 3, matriks.** Baris = tier, kolom = pita:
@@ -368,12 +369,14 @@ Faktor yang tidak diketahui dikeluarkan dan bobotnya dinormalisasi ulang, lalu d
 
 Sel bertanda "catatan batas" bernilai awal `reach` dan menampilkan catatan bahwa posisinya di batas match/reach. Isi sel bisa diubah di `config/app.yaml` tanpa mengubah kode.
 
+**Label.** Setiap kategori dari matriks berlabel **"indikatif, belum dikalibrasi"** (`label_penilaian` di config), dan ringkasan menambahkan catatan yang sama. Nilai bobot, batas tier, dan matriks adalah bawaan awal, belum diuji terhadap data tahun lalu. Kategori dari `acuan_skor` berlabel "acuan siklus sebelumnya".
+
 **Tingkat keyakinan.**
 
 | Jalur | Keyakinan | Alasan |
 |---|---|---|
 | SNBT (tier dari rapor) | `rendah` | Tier hanya **proksi** dari rapor, bukan skor UTBK. Selalu ditandai "proksi dari rapor, bukan skor UTBK" |
-| SNBT (tier dari skor tryout) | `sedang` | Aktif bila `skala_skor_tryout` diisi di config dan siswa punya skor |
+| SNBT (tier dari skor tryout) | `sedang` | **Nonaktif** (`skala_skor_tryout: null`). Skor tryout tidak memengaruhi kategori. Aktif lagi bila skala diisi di config |
 | SNBP, rekam jejak alumni diketahui | `sedang` | Alumni hanya memengaruhi keyakinan dan catatan, bukan sel matriks |
 | SNBP, alumni kosong atau `tidak_tahu` | `rendah` | Kuota sekolah dan riwayat alumni memengaruhi hasil nyata |
 
@@ -390,10 +393,10 @@ Sel bertanda "catatan batas" bernilai awal `reach` dan menampilkan catatan bahwa
 
 1. Tier: kuat (skor 0,83, sumber proksi rapor).
 2. Rasio keketatan: 2132 peminat / 75 daya tampung = 28,43.
-3. Batas pita dari persentil 33 dan 67 atas 31 prodi UI: [30,84 ; 71,23]. 28,43 < 30,84 sehingga pita **rendah**.
-4. `matriks[kuat][rendah]` = **safe**, keyakinan **rendah**.
+3. Batas pita dari persentil 33 dan 67 atas 16 prodi akademik UI: [23,59 ; 31,08]. 28,43 berada di antaranya sehingga pita **sedang**.
+4. `matriks[kuat][sedang]` = **match**, keyakinan **rendah**, label "indikatif, belum dikalibrasi".
 
-> **Peringatan kualitas.** Pada contoh di atas, Ilmu Komputer UI jadi `safe` karena 15 prodi vokasi (rasio tinggi, 46 sampai 165) ikut dalam persentil dan menggeser batas. Dengan `kelompok: program` (persentil dihitung terpisah akademik dan vokasi) batas akademik menjadi [23,59 ; 31,08], Ilmu Komputer jadi `match`, dan Kedokteran, Psikologi, HI jadi `reach`. Hasilnya lebih masuk akal, tetapi belum diterapkan karena butuh keputusan tim data. Lihat [bagian lanjutan](#15-yang-perlu-dikerjakan-selanjutnya).
+> **Catatan perubahan.** Sebelumnya persentil dihitung dari semua prodi sekaligus. Itu membuat 15 prodi vokasi (rasio tinggi, 46 sampai 165) menggeser batas sehingga Ilmu Komputer UI tampil `safe`. Sejak 14 Oktober 2026 pita dihitung per program. Batas akademik [23,59 ; 31,08] (n = 16) dan vokasi [68,0 ; 97,38] (n = 15). Dampak pada persona: Rani, Ilmu Komputer dan Teknik Industri berubah `safe` menjadi `match`; Dimas, Teknik Industri berubah `match` menjadi `reach`.
 
 ### 7.3 Evaluasi strategi (`/strategy`)
 
@@ -472,9 +475,13 @@ Data resmi ada di `data/seed/*.csv` dan dimuat dengan `scripts.ingest` (atau `PO
 | `acuan_skor_snbt.csv` | `acuan` | Rentang skor acuan per prodi (kosong) |
 | `dokumen_rag_metadata.csv` | `dokumen` | Metadata 5 dokumen resmi untuk RAG |
 | `profesi.csv` (opsional) | `profesi` | Contoh profesi per rumpun untuk `/explore` |
-| `golden_set_draft.csv` | tidak di-ingest | Pertanyaan evaluasi RAG |
+| `golden_set.csv` | tidak di-ingest | 23 pertanyaan evaluasi RAG (`golden_set_draft.csv` adalah versi lama, tidak dipakai) |
 
 **Verifikasi.** Kolom `terakhir_diverifikasi` hanya boleh diisi manusia setelah mencocokkan dengan sumber resmi, tidak pernah otomatis. Data yang kosong tetap bisa dipakai dan ditandai `belum_diverifikasi` di setiap respons API.
+
+Status per 14 Oktober 2026: `config_ketentuan.csv`, `dokumen_wajib.csv`, `ptn.csv`, dan `rule_gate.csv` sudah bertanggal 2026-10-14. `prodi.csv` dan `dokumen_rag_metadata.csv` belum bertanggal. `acuan_skor_snbt.csv` sengaja kosong.
+
+**Prodi tanpa data acuan.** Baris prodi yang tidak punya `daya_tampung` dan `peminat` (semua PTN selain UI, ditambah satu prodi UI) tidak dihitung terverifikasi, walaupun kolom tanggalnya terisi: tanggal itu diabaikan saat ingest (ringkasan ingest melaporkannya sebagai `prodi_tanpa_data_tanggal_diabaikan`). Penilaian prodi seperti ini menghasilkan `belum_ada_acuan` dengan status `belum_diverifikasi`, dan UI diminta menampilkan "belum ada data acuan".
 
 Sebelum rekam video dan submit, nyalakan `REQUIRE_VERIFIED=true`. Efeknya:
 
@@ -487,7 +494,11 @@ Cek kesiapan kapan saja:
 uv run python -m scripts.check_verified --detail
 ```
 
-Skrip ini melaporkan tabel kritis, katalog, status persona, status kasus golden gate, dan kecukupan golden set RAG. Kode keluar 1 bila ada yang wajib tetapi belum terverifikasi.
+Skrip ini melaporkan tabel kritis, katalog, status persona, status kasus golden gate, dan kecukupan golden set RAG.
+
+- **Wajib** (kode keluar 1 bila belum): tabel kritis `rules_jalur`, `ketentuan`, `acuan_skor`.
+- **Peringatan** (tidak menggagalkan): katalog, persona, dan kasus gate. Gagal hanya dengan `--ketat`. Alasannya, hanya persona Rani yang diverifikasi pemilik data; persona lain dan `gate.json` sengaja tetap `hasil_terverifikasi: false`.
+- Prodi tanpa daya tampung/peminat dilaporkan terpisah ("N prodi tanpa daya tampung/peminat"), tidak dihitung sebagai terverifikasi maupun gagal.
 
 ---
 
@@ -500,6 +511,9 @@ Skrip ini melaporkan tabel kritis, katalog, status persona, status kasus golden 
 | `DATABASE_URL` | Koneksi PostgreSQL (dev: port 5433) |
 | `TEST_DATABASE_URL` | Database untuk pytest |
 | `GEMINI_API_KEY` | Kunci Google AI Studio. Kosong = fitur LLM memakai teks cadangan |
+| `LLM_MODEL` | Model generatif (menimpa `llm.model` di `app.yaml`). Cari nama valid dengan `scripts.list_models` |
+| `LLM_MODEL_FALLBACK` | Model cadangan, dipisah koma. Dicoba berurutan saat model utama 404 atau 429, sebelum jatuh ke teks template |
+| `EMBED_MODEL` | Model embedding (menimpa `embedding.model`). Dikunci bersama dimensi 768: mengganti berarti re-embed semua chunk |
 | `ADMIN_KEY` | Kunci `X-Admin-Key`. Kosong = endpoint admin 404 |
 | `CORS_ORIGINS` | Origin frontend, pisahkan koma |
 | `SESSION_TTL_HOURS` | Masa berlaku sesi (menimpa `app.yaml`), bawaan 24 |
@@ -521,7 +535,7 @@ Semua angka yang bisa dikalibrasi ada di sini dan **divalidasi saat start** (kun
 | `query` | Pola deteksi pertanyaan keputusan |
 | `explore` | Bobot, batas, dan klasifikasi awal tiap rumpun |
 
-Semua bobot, batas, dan isi matriks adalah **placeholder** yang menunggu kalibrasi tim data. Mengubahnya tidak memerlukan perubahan kode.
+Semua bobot, batas, dan isi matriks memakai **nilai bawaan yang belum dikalibrasi** (hasil berlabel "indikatif, belum dikalibrasi"). Mengubahnya tidak memerlukan perubahan kode. Teks `teks.pemberitahuan_demo` ("demo memakai data fiktif") juga diatur di sini dan dikirim sebagai field `pemberitahuan` pada `POST /session` dan `GET /session`.
 
 ---
 
@@ -554,7 +568,7 @@ Saat `deploy.sh` jalan dengan `REQUIRE_VERIFIED=true` dan data belum bertanggal,
 
 ```bash
 docker compose up -d db
-uv run pytest            # 845 tes. Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
+uv run pytest            # 864 tes. Jalankan satu pytest saja pada satu waktu (database uji dipakai bersama). Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
 ```
 
 Tidak ada tes yang memanggil Gemini asli: LLM diganti `FakeLLM` (`tests/fakes.py`).
@@ -567,7 +581,7 @@ uv run python -m scripts.run_golden_set --rag         # + RAG; butuh GEMINI_API_
 ```
 
 - **Gate**: `config/golden/gate.json`, 33 kasus yang mencakup ke-13 syarat, kasus tepi tahun lulus, batas kuota sekolah, Paket C, dan kombinasi gagal + `data_kurang`. Harapan ditulis dari pembacaan syarat resmi, bukan disalin dari keluaran mesin. Saat ini 33 dari 33 sesuai.
-- **RAG**: `data/seed/golden_set_draft.csv`. Skor otomatis hanyalah proksi: pertanyaan di luar cakupan lulus bila `yakin: false`; pertanyaan keputusan lulus bila dijawab `mesin_aturan`; pertanyaan dalam cakupan diperiksa dari kecocokan sumber, halaman, dan angka kunci. Akurasi jawaban sebenarnya dinilai manusia lewat kolom `nilai_manual` pada laporan CSV (`reports/golden_rag_*.csv`).
+- **RAG**: `data/seed/golden_set.csv` (23 pertanyaan: 13 dalam cakupan, 6 di luar cakupan, 4 keputusan). Kolom `halaman` diisi dari PDF di `data/dokumen/` dengan `uv run python -m scripts.isi_halaman_golden` (dry-run; `--tulis` menyimpan, `--timpa` menimpa isian lama, `--terima-perkiraan` ikut mengisi yang berstatus perkiraan). Hanya kecocokan kuat yang mengisi `halaman`; kecocokan lemah ditandai `perkiraan` dan yang tidak ketemu `tidak_ditemukan` di kolom `status_halaman` untuk dicek manusia. Status terakhir: 6 terisi, 10 perkiraan, 1 tidak ditemukan (baris 20). Skor otomatis hanyalah proksi: pertanyaan di luar cakupan lulus bila `yakin: false`; pertanyaan keputusan lulus bila dijawab `mesin_aturan`; pertanyaan dalam cakupan diperiksa dari kecocokan sumber, halaman, dan angka kunci. Akurasi jawaban sebenarnya dinilai manusia lewat kolom `nilai_manual` pada laporan CSV (`reports/golden_rag_*.csv`).
 - **Smoke test pasca-deploy**: `scripts/smoke_test.py` menjalankan alur persona via HTTP, termasuk uji penolakan admin, `/docs` mati di produksi, dan header keamanan nginx.
 
 ---
@@ -591,13 +605,17 @@ Konfirmasi hukum soal data anak (UU PDP) dan persetujuan orang tua/wali harus di
 
 ## 14. Batasan yang diketahui
 
-- **Katalog**: hanya UI yang punya data keketatan (daya tampung dan peminat) SNBT. Sembilan PTN lain berstatus `belum_ada_acuan`.
+- **Katalog**: hanya UI yang punya data keketatan (daya tampung dan peminat) SNBT. Sembilan PTN lain berstatus `belum_ada_acuan`. Demo hanya memakai UI.
 - **SNBP**: belum ada data keketatan sama sekali, jadi semua penilaian SNBP `belum_ada_acuan` (tier siswa tetap tampil).
-- **SNBT**: tidak ada passing grade resmi. Kategori memakai keketatan relatif dan tier dari rapor sebagai proksi, makanya keyakinan `rendah`.
-- **Pita keketatan** tercampur akademik dan vokasi (lihat peringatan di 7.2).
+- **SNBT**: tidak ada passing grade resmi. Kategori memakai keketatan relatif dan tier dari rapor sebagai proksi, makanya keyakinan `rendah`. Skor tryout tidak memengaruhi kategori (skala dinonaktifkan).
+- **Belum dikalibrasi**: semua kategori berlabel "indikatif, belum dikalibrasi".
+- **Pita keketatan** dihitung per program (akademik dan vokasi terpisah). Kelompok vokasi hanya 15 prodi.
+- **Verifikasi**: `prodi.csv` dan `dokumen_rag_metadata.csv` belum bertanggal. Hanya persona Rani yang akan diverifikasi pemilik data; Dimas, Budi, Sinta, dan 33 kasus `gate.json` tetap `hasil_terverifikasi: false`, sehingga hasil golden berfungsi sebagai kunci regresi, bukan bukti kebenaran.
+- **Data diri anak**: demo memakai data fiktif dan UI wajib menampilkan catatan itu. Konfirmasi hukum belum dikerjakan dan menjadi syarat sebelum peluncuran nyata.
+- **Eksplorasi** memakai klasifikasi rumpun awal di `config/app.yaml` (bagian `explore`), bukan data resmi.
 - **Rapor SMA semester 1 sampai 5** adalah tafsiran, bukan kutipan resmi. Pemeringkatan resmi SNBP memakai rerata semua semester kecuali semester terakhir.
 - **Provinsi UI** di `ptn.csv` diubah sementara ke Jawa Barat (sumber lain menulis Jakarta) agar persona fiktif konsisten.
-- **Nama model generatif** (`gemini-2.5-flash`) belum diverifikasi di AI Studio, dan **tidak ada panggilan Gemini asli** yang pernah dijalankan (kunci belum ada).
+- **Nama model generatif**: bawaan `gemini-2.5-flash` di `app.yaml` sudah tidak tersedia (404). Isi `LLM_MODEL` di `.env` dengan nama dari `scripts.list_models`. Fallback model (`LLM_MODEL_FALLBACK`) hanya untuk generate; embedding tidak punya cadangan karena dikunci ke dimensi kolom. Hasil generate dari model cadangan disimpan di cache dengan kunci model utama.
 - **Rate limiter dan semaphore LLM di memori**: hanya cocok untuk satu proses.
 - **Siklus 2027** belum diumumkan resmi per 13 Oktober 2026. Semua data memakai siklus 2026 dengan label acuan siklus sebelumnya.
 - `init-cert.sh` (Let's Encrypt nyata) dan `deploy.sh` di server Linux sungguhan belum diuji. Yang sudah diuji: build dan alur nginx HTTP/HTTPS (sertifikat self-signed) di Docker lokal.
@@ -608,25 +626,36 @@ Konfirmasi hukum soal data anak (UU PDP) dan persetujuan orang tua/wali harus di
 
 ### A. Tim data (tidak butuh kode)
 
-- [ ] **Verifikasi manusia** semua data resmi: isi `terakhir_diverifikasi` di `rule_gate.csv`, `config_ketentuan.csv`, `dokumen_wajib.csv` (kolom sudah ditambahkan, masih kosong), `ptn.csv`, `prodi.csv`, `dokumen_rag_metadata.csv`. Lalu ingest ulang dan jalankan `scripts.check_verified`.
-- [ ] **Verifikasi hasil persona dan kasus golden gate**: setelah dicocokkan dengan panduan resmi, set `hasil_terverifikasi: true` beserta `terakhir_diverifikasi` dan `diverifikasi_oleh` di `config/personas/*.json`, dan isi dua kolom yang sama di `config/golden/gate.json`.
-- [ ] **Cek provinsi UI** di daftar resmi SNPMB. Bila ternyata DKI Jakarta, ganti `provinsi` pada keempat persona.
-- [ ] **Putuskan kelompok pita SNBT**: ubah `snbt.pita_keketatan.kelompok` ke `program` di `config/app.yaml` (rekomendasi, lihat 7.2), lalu perbarui `harapan.penilaian` di persona Rani dan Dimas (tes golden akan menunjukkan mana yang berubah).
-- [ ] **Kalibrasi config**: bobot dan batas tier, batas pita SNBP, tiga sel matriks "batas match/reach", dan `skala_skor_tryout` bila skala skor tryout sudah pasti.
-- [ ] **Lengkapi data keketatan**: `daya_tampung_snbp` dan `peminat_snbp` untuk SNBP, serta sembilan PTN lain dan prodi vokasinya. Cek apakah daftar daya tampung bisa diunduh dari portal resmi agar tidak diketik manual.
-- [ ] **`acuan_skor_snbt.csv`** hanya bila ada sumber skor yang bisa dipertanggungjawabkan.
-- [ ] **Data eksplorasi**: `tag_minat` dan `mapel_penentu` per prodi, serta `profesi.csv` (kolom `rumpun`, `nama`, opsional `id` dan `deskripsi`). Putuskan juga himpunan dimensi minat final (saat ini RIASEC sebagai placeholder) bersama frontend.
-- [ ] **Unduh 5 PDF** dokumen resmi ke `data/dokumen/<dokumen_id>.pdf`.
-- [ ] **Perluas golden set RAG** menjadi minimal 20 pertanyaan (saat ini 12): minimal 5 di luar cakupan (ada 3), minimal 3 bertipe keputusan (ada 1), dan isi kolom halaman untuk pertanyaan dalam cakupan.
-- [ ] **Konfirmasi hukum** soal data anak dan persetujuan orang tua/wali sebelum data nyata dipakai.
+Status per 14 Oktober 2026. Item bercentang sudah selesai.
+
+**Sudah selesai**
+
+- [x] **Tanggal verifikasi** di `rule_gate.csv`, `config_ketentuan.csv`, `dokumen_wajib.csv`, dan `ptn.csv` (2026-10-14), sudah di-ingest dan `scripts.check_verified` lulus untuk tabel kritis.
+- [x] **Kelompok pita SNBT** diubah ke `program`; `harapan.penilaian` Rani dan Dimas diperbarui (perubahan di 7.2).
+- [x] **Kalibrasi**: diputuskan memakai nilai bawaan dengan label "indikatif, belum dikalibrasi", dicatat sebagai keterbatasan di PRD v1.1. `skala_skor_tryout` dinonaktifkan.
+- [x] **Data keketatan**: SNBP, sembilan PTN lain, dan `acuan_skor_snbt.csv` sengaja dikosongkan. Hasilnya `belum_ada_acuan`, demo hanya UI.
+- [x] **Golden set RAG** 23 baris (`golden_set.csv`), skrip pengisi halaman dari PDF sudah ada dan sudah dijalankan.
+- [x] **Catatan "demo memakai data fiktif"** dikirim backend lewat field `pemberitahuan`.
+- [x] **Catat perubahan PRD v1.1** (log perubahan, kontrak, keterbatasan) di PRD bagian 18.
+- [x] **Unduh PDF** dokumen resmi: 4 dari 5 sudah ada di `data/dokumen/`.
+
+**Masih terbuka**
+
+- [ ] **Tanggal verifikasi `prodi.csv` dan `dokumen_rag_metadata.csv`** masih kosong. Isi setelah dicocokkan dengan sumber resmi (tidak boleh diisi otomatis), lalu ingest ulang dan jalankan `scripts.check_verified`.
+- [ ] **Verifikasi persona Rani** oleh pemilik data: set `hasil_terverifikasi: true` beserta `terakhir_diverifikasi` dan `diverifikasi_oleh` di `config/personas/rani.json`. Persona Dimas, Budi, Sinta dan `config/golden/gate.json` tetap `false` (keputusan pemilik data).
+- [ ] **Cek halaman golden RAG**: 10 baris berstatus `perkiraan` dan 1 `tidak_ditemukan` (baris 20) di kolom `status_halaman`. Cek manual lalu isi `halaman`, atau jalankan `scripts.isi_halaman_golden --terima-perkiraan --tulis` bila perkiraannya sudah dipastikan benar.
+- [ ] **PDF `snpmb-faq`** (halaman web) belum ada di `data/dokumen/`.
+- [ ] **Cek provinsi UI** di daftar resmi SNPMB. Provinsi tetap Jawa Barat sampai pemilik data memberi kabar. Bila berubah (mis. DKI Jakarta), ganti `provinsi` pada keempat persona.
+- [ ] **Data eksplorasi** (dikerjakan paling akhir, tidak memblokir pekerjaan lain): `tag_minat` dan `mapel_penentu` per prodi, serta `profesi.csv` (kolom `rumpun`, `nama`, opsional `id` dan `deskripsi`). Bila membuat draf, simpan terpisah dan beri label belum terverifikasi. Sementara itu `/explore` memakai klasifikasi awal di `config/app.yaml`. Putuskan juga himpunan dimensi minat final (saat ini RIASEC sebagai placeholder) bersama frontend.
+- [ ] **Konfirmasi hukum** soal data anak (UU PDP) dan persetujuan orang tua/wali. Belum dikerjakan; **syarat sebelum peluncuran nyata**.
+- [ ] **Kalibrasi sungguhan** dan **data keketatan** SNBP/PTN lain bila ingin demo melampaui UI.
 
 ### B. Backend dan AI
 
-- [ ] **Isi `GEMINI_API_KEY`**, cek model dan kuota di AI Studio, lalu `uv run python -m scripts.check_gemini`. Tentukan nama model generatif final di `config/app.yaml`.
+- [ ] **Isi `GEMINI_API_KEY`**, cek model dan kuota di AI Studio, lalu `uv run python -m scripts.check_gemini`. Isi `LLM_MODEL`, `LLM_MODEL_FALLBACK`, dan `EMBED_MODEL` di `.env` (nama dari `scripts.list_models`).
 - [ ] **Ingest dokumen RAG sungguhan** (`scripts.ingest_docs`) dan **uji kualitas pencarian**: kalibrasi `rag.ambang_skor` (awal 0,55) dan `top_k` dari hasil nyata.
 - [ ] **Jalankan `scripts.run_golden_set --rag`**, isi `nilai_manual`, dan laporkan metrik apa adanya di pitch.
 - [ ] **Uji ketersediaan** `/query` dan narasi saat kuota Gemini habis (fallback sudah ada, tetapi belum pernah dicoba dengan error nyata).
-- [ ] **Catat perubahan PRD v1.1** ke berkas Log Perubahan PRD: field profil baru, rename `peringkat_kelas` menjadi `peringkat_sekolah` + `jumlah_siswa_angkatan`, `jenis_sekolah` menjadi `jenjang_sekolah`, tabel baru `prodi_jalur` dan `ketentuan`, status gate `tidak_berlaku`, tingkat temuan `pelanggaran`, tipe ingest `ketentuan` dan `profesi`, endpoint `/explore`, env `REQUIRE_VERIFIED` dan `TRUSTED_PROXIES`.
 - [ ] **Uji kualitas kategori** secara mundur (backtest) dengan data tahun lalu bila tersedia. Sampai saat itu kategori hanya boleh dikomunikasikan sebagai heuristik.
 
 ### C. Deploy dan operasional
