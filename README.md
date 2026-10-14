@@ -49,6 +49,8 @@ Semua endpoint ada di bawah `/api/v1`. Selain `GET /health` dan `POST /session`,
 | `DELETE /session` | "Hapus data saya": hapus sesi dan semua data turunannya |
 | `GET /profile`, `PUT /profile` | Baca dan simpan profil (parsial), kembalikan `data_kurang` dan pertanyaannya |
 | `GET /catalog/ptn`, `/catalog/prodi`, `/catalog/prodi/{id}` | Telusuri PTN dan prodi (filter, paginasi, detail keketatan) |
+| `GET /riasec/questions` | Ambil instrumen tes minat RIASEC (item + skala) untuk ditampilkan |
+| `POST /riasec/submit` | Skor jawaban tes minat jadi vektor minat (deterministik), simpan ke profil |
 | `POST /explore` | Rekomendasi rumpun jurusan dari minat dan nilai (tanpa LLM) |
 | `POST /analyze` | Gate lalu penilaian per prodi per jalur, mendukung `override` (what-if) |
 | `POST /strategy` | Evaluasi komposisi pilihan per jalur, saran swap, what-if, simpan strategi |
@@ -78,7 +80,8 @@ flowchart TD
     A["Landing + consent"] --> B["POST /session"]
     B --> C["PUT /profile"]
     C --> D{"Sudah punya target?"}
-    D -->|"Belum (Skenario A)"| E["POST /explore"]
+    D -->|"Belum (Skenario A)"| TM["GET /riasec/questions + POST /riasec/submit"]
+    TM --> E["POST /explore"]
     E --> F["GET /catalog/*"]
     D -->|"Sudah (Skenario B)"| F
     F --> G["POST /analyze"]
@@ -140,10 +143,10 @@ Stack: Python 3.11+, FastAPI, SQLAlchemy 2 (sinkron) + psycopg 3, Alembic, Postg
 
 ```
 app/
-  api/v1/        endpoint (session, profile, catalog, explore, analyze, strategy, summary, query, admin)
+  api/v1/        endpoint (session, profile, catalog, riasec, explore, analyze, strategy, summary, query, admin)
   core/          config, error, keamanan token, rate limit
   db/            model SQLAlchemy, migrasi Alembic, guard startup (embedding, verifikasi)
-  domain/        fungsi murni: gate, penilaian, strategi, ringkasan, match (tanpa DB/LLM/framework)
+  domain/        fungsi murni: gate, penilaian, strategi, ringkasan, match, riasec (tanpa DB/LLM/framework)
   services/      orkestrasi: profil, analisis, strategi, ringkasan, query, eksplorasi, persona
   ingest/        konversi CSV/JSON ke tabel, validasi per baris
   llm/           klien Gemini, cache, penyaring PII, pagar keluaran, prompt, teks cadangan
