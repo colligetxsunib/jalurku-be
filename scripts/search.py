@@ -23,6 +23,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("pertanyaan")
     ap.add_argument("--top-k", type=int, default=config.rag.top_k)
     args = ap.parse_args(argv)
+    # Teks PDF memuat simbol di luar cp1252 (konsol Windows): jangan gagal saat mencetak.
+    sys.stdout.reconfigure(errors="replace")
 
     if not settings.gemini_api_key:
         print("GEMINI_API_KEY belum diisi (.env).", file=sys.stderr)
