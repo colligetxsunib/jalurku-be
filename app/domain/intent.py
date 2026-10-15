@@ -16,6 +16,12 @@ def _kanon(teks: str) -> str:
     return " ".join(re.sub(r"[^\w\s]", " ", t).split())
 
 
+def adalah_pertanyaan_eksplorasi(pertanyaan: str, pola: Sequence[str]) -> bool:
+    """True bila pertanyaan bertema minat atau pilihan jurusan (dialihkan ke fitur eksplorasi)."""
+    t = _kanon(pertanyaan)
+    return any(re.search(p, t) for p in pola)
+
+
 def adalah_pertanyaan_keputusan(
     pertanyaan: str, pola: Sequence[str], pengecualian: Sequence[str] = ()
 ) -> bool:

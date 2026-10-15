@@ -142,6 +142,15 @@ query:
     - '\b(aku|saya|ku)\b.*\b(peluang|kemungkinan|chance)\b'
     - '\bpasti\b.*\b(lolos|diterima|keterima)\b'
   pengecualian_keputusan: [kalau, jika, bila, andai, seandainya, misalnya, umpamanya]
+  # Pertanyaan tentang minat atau pilihan jurusan dialihkan ke fitur eksplorasi (bukan RAG, bukan guru BK).
+  # Dicek setelah pola_keputusan. Hindari pola terlalu umum agar pertanyaan aturan tidak ikut terjaring.
+  pola_eksplorasi:
+    - '\b(jurusan|prodi|program studi)\b.*\b(cocok|sesuai|pas|bagus|terbaik|direkomendasikan)\b'
+    - '\b(cocok|sesuai|pas)\b.*\b(jurusan|prodi|program studi)\b'
+    - '\b(rekomendasi|saran|rekomendasikan)\b.*\b(jurusan|prodi|program studi)\b'
+    - '\b(hobi|hobiku|minatku|bakatku|bakat|passion|cita cita)\b.*\b(jurusan|prodi|kuliah)\b'
+    - '\b(jurusan|prodi)\b.*\b(hobi|minat|bakat|passion)\b'
+    - '\b(bingung|ragu)\b.*\b(pilih|memilih)\b.*\b(jurusan|prodi)\b'
 
 # Teks yang ditampilkan ke siswa (bebas diubah tanpa revisi PRD)
 teks:

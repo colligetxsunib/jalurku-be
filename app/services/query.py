@@ -22,8 +22,9 @@ from sqlalchemy.orm import Session
 from app.core.config import AppConfig
 from app.core.errors import AppError
 from app.db import models as m
-from app.domain.intent import adalah_pertanyaan_keputusan
+from app.domain.intent import adalah_pertanyaan_eksplorasi, adalah_pertanyaan_keputusan
 from app.llm.fallback_texts import (
+    TEKS_ALIH_EKSPLORASI,
     TEKS_JELASKAN_PENGANTAR,
     TEKS_KEPUTUSAN_TANPA_KONTEKS,
     TEKS_LAYANAN_GAGAL,
@@ -445,6 +446,18 @@ def jawab(
         q, config.query.pola_keputusan, config.query.pengecualian_keputusan
     ):
         respons, ids = _keputusan(db, refdata, config, sesi, body, q)
+    elif adalah_pertanyaan_eksplorasi(q, config.query.pola_eksplorasi):
+        # Pengalihan deterministik: tanpa embedding, tanpa LLM, tanpa daftar sumber.
+        respons, ids = (
+            _respons(
+                TEKS_ALIH_EKSPLORASI,
+                jenis="pengalihan_eksplorasi",
+                mode="tanya",
+                yakin=False,
+                saran=_saran(config, q),
+            ),
+            [],
+        )
     else:
         respons, ids = _rag(db, llm, refdata, config, sesi, body, q)
 

@@ -284,6 +284,20 @@ class QueryConfig(_Strict):
     maks_saran_pertanyaan: int = Field(ge=0, le=10)
     pola_keputusan: list[str] = Field(min_length=1)
     pengecualian_keputusan: list[str] = Field(default_factory=list)
+    # Pertanyaan bertema minat/pilihan jurusan: dialihkan ke fitur eksplorasi, bukan dijawab dari dokumen.
+    pola_eksplorasi: list[str] = Field(default_factory=list)
+
+    @field_validator("pola_eksplorasi")
+    @classmethod
+    def _regex_eksplorasi_valid(cls, v: list[str]) -> list[str]:
+        import re
+
+        for pola in v:
+            try:
+                re.compile(pola)
+            except re.error as exc:
+                raise ValueError(f"regex tidak valid '{pola}': {exc}") from exc
+        return v
 
     @field_validator("pola_keputusan")
     @classmethod

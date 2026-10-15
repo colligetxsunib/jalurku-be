@@ -19,6 +19,12 @@ TEKS_LAYANAN_GAGAL = (
 TEKS_JELASKAN_PENGANTAR = (
     "Penjelasan otomatis sedang tidak tersedia. Berikut hasil dari mesin aturan: "
 )
+TEKS_ALIH_EKSPLORASI = (
+    "Pertanyaan tentang minat dan pilihan jurusan paling pas dijawab lewat fitur Eksplorasi Jurusan, "
+    "bukan dari dokumen resmi seleksi. Isi minat dan nilai rapormu di sana (kamu juga bisa ikut tes "
+    "minat), lalu kamu akan melihat rumpun jurusan yang cocok beserta PTN yang membukanya. "
+    "Hasilnya gambaran awal untuk membantumu menjajaki pilihan."
+)
 
 
 def catatan_dokumen_terkait(tahun_siklus: int) -> str:

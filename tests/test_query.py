@@ -466,6 +466,50 @@ def test_yakin_true_tetap_membawa_sumber_dan_dokumen_terkait_kosong(bangun):
     d = ok(tanya(c, muat_persona(c, "rani"), Q_PILIHAN))
     assert d["yakin"] is True and d["sumber"] and d["dokumen_terkait"] == []
     assert not any("bukan jawaban" in x for x in d["catatan"])
+
+
+@pytest.mark.parametrize(
+    "pertanyaan",
+    [
+        "Jurusan apa yang paling cocok untuk hobi saya menggambar?",
+        "Aku bingung memilih jurusan, bisa kasih rekomendasi jurusan?",
+        "Prodi apa yang sesuai dengan minatku di bidang komputer?",
+        "Bakat saya di musik, kuliah jurusan apa ya?",
+    ],
+)
+def test_pertanyaan_minat_dialihkan_ke_eksplorasi_tanpa_llm_dan_tanpa_guru_bk(bangun, pertanyaan):
+    c, fake = bangun()
+    d = ok(tanya(c, muat_persona(c, "rani"), pertanyaan))
+    assert d["jenis_jawaban"] == "pengalihan_eksplorasi" and d["yakin"] is False
+    assert d["jawaban"] == TEKS_ALIH_EKSPLORASI
+    assert "Eksplorasi Jurusan" in d["jawaban"] and "guru BK" not in d["jawaban"]
+    assert d["sumber"] == [] and d["dokumen_terkait"] == [] and d["fallback"] is False
+    assert (fake.panggilan_embed, fake.panggilan_generate) == (0, 0)  # deterministik, hemat kuota
+    assert "kamu" in d["jawaban"] and "Anda" not in d["jawaban"]
+
+
+@pytest.mark.parametrize(
+    "pertanyaan",
+    [
+        Q_PILIHAN,
+        Q_DOKUMEN,
+        "Apakah semua prodi memerlukan portofolio?",
+        "Apa perbedaan SNBP dan SNBT?",
+        "Berapa maksimal pilihan prodi SNBT 2026 dan apakah boleh semuanya Sarjana?",
+    ],
+)
+def test_pertanyaan_aturan_umum_tidak_salah_dialihkan_ke_eksplorasi(app_config, pertanyaan):
+    from app.domain.intent import adalah_pertanyaan_eksplorasi
+
+    assert not adalah_pertanyaan_eksplorasi(pertanyaan, app_config.query.pola_eksplorasi)
+
+
+def test_pertanyaan_keputusan_didahulukan_atas_pengalihan_eksplorasi(bangun):
+    c, _ = bangun()
+    d = ok(tanya(c, muat_persona(c, "rani"), "Apakah saya lolos SNBT?", prodi_id=IK, jalur="SNBT"))
+    assert d["jenis_jawaban"] == "mesin_aturan"
+
+
 def test_llm_menyatakan_konteks_tidak_cukup(bangun):
     c, fake = bangun(
         FakeLLM(peta_embed=PETA, balasan=jawab_rag("Tidak ada di dokumen.", cukup=False))
