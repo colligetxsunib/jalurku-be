@@ -11,9 +11,7 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, StringConstraints
 
 PolaId = r"^[a-z][a-z0-9_-]*$"
-KunciButir = Annotated[
-    str, StringConstraints(pattern=PolaId, min_length=1, max_length=64)
-]
+KunciButir = Annotated[str, StringConstraints(pattern=PolaId, min_length=1, max_length=64)]
 
 
 class RiasecSubmit(BaseModel):

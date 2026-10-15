@@ -175,7 +175,9 @@ def jalankan(
         )
         if q is not None and q.status_code == 200:
             item = q.json()["item"]
-            jawaban = {b["id"]: 2 + (i % 4) for i, b in enumerate(item)}
+            skala = q.json()["skala"]
+            rentang = skala["maks"] - skala["min"] + 1
+            jawaban = {b["id"]: skala["min"] + (i % rentang) for i, b in enumerate(item)}
             tembak(
                 c,
                 "RIASEC submit",

@@ -290,7 +290,7 @@ def test_lima_set_jawaban_atas_instrumen_asli(app_seed):
     ids = {d: [b["id"] for b in soal if b["dimensi"] == d] for d in DIM}
 
     def jawab(pola: dict[str, list[int]]) -> dict[str, int]:
-        return {i: v for d, vs in pola.items() for i, v in zip(ids[d], vs)}
+        return {i: v for d, vs in pola.items() for i, v in zip(ids[d], vs, strict=False)}
 
     h = masuk(app_seed)
 
@@ -329,7 +329,14 @@ def test_lima_set_jawaban_atas_instrumen_asli(app_seed):
         kirim(
             app_seed,
             h,
-            jawab({"realistis": [4, 4, 3], "investigatif": [3, 4, 3], "sosial": [2, 2], "artistik": [1]}),
+            jawab(
+                {
+                    "realistis": [4, 4, 3],
+                    "investigatif": [3, 4, 3],
+                    "sosial": [2, 2],
+                    "artistik": [1],
+                }
+            ),
             simpan=False,
         )
     )

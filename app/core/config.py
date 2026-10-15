@@ -53,7 +53,9 @@ class Settings(BaseSettings):
     app_config_path: str = str(DEFAULT_CONFIG_PATH)
     seed_dir: str = str(ROOT_DIR / "data" / "seed")
     dokumen_dir: str = str(ROOT_DIR / "data" / "dokumen")
-    riasec_dir: str = str(ROOT_DIR / "data" / "riasec")  # folder instrumen tes minat (instrumen_v1.json)
+    riasec_dir: str = str(
+        ROOT_DIR / "data" / "riasec"
+    )  # folder instrumen tes minat (instrumen_v1.json)
     draf_dir: str = str(ROOT_DIR / "data" / "draft")  # data eksplorasi DRAF, belum terverifikasi
 
     @field_validator("cors_origins")
