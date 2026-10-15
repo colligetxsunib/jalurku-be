@@ -5,6 +5,7 @@ versi_config: 1
 
 sesi:
   ttl_jam: 24                      # dapat ditimpa env SESSION_TTL_HOURS
+  ttl_demo_jam: 72                 # hanya sesi persona demo buatan scripts.siapkan_demo (data fiktif)
   interval_pembersihan_menit: 10
 
 rate_limit:

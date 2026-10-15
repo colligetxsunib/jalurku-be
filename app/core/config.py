@@ -90,6 +90,9 @@ class Batas(_Strict):
 
 class SesiConfig(_Strict):
     ttl_jam: int = Field(default=24, ge=1)
+    # Hanya untuk sesi persona demo yang dibuat skrip `scripts.siapkan_demo` (bukan lewat POST /session):
+    # supaya juri yang menilai keesokan harinya tidak kena sesi kedaluwarsa.
+    ttl_demo_jam: int = Field(default=72, ge=1)
     interval_pembersihan_menit: int = Field(default=10, ge=1)
 
 
