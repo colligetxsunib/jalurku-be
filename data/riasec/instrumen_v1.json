@@ -1,0 +1,61 @@
+{
+  "versi_instrumen": "riasec-id-v1",
+  "sumber": "Disusun tim berdasarkan kerangka teori Holland (RIASEC). Butir orisinal, belum divalidasi psikometrik, bukan tes psikologi.",
+  "skala": {
+    "min": 0,
+    "maks": 4,
+    "label": {
+      "0": "Sangat tidak suka",
+      "1": "Tidak suka",
+      "2": "Biasa saja",
+      "3": "Suka",
+      "4": "Sangat suka"
+    }
+  },
+  "dimensi": [
+    "realistis",
+    "investigatif",
+    "artistik",
+    "sosial",
+    "enterprising",
+    "konvensional"
+  ],
+  "item": [
+    {"id": "r1", "teks": "Memperbaiki sepeda yang rusak, misalnya rantai atau remnya.", "dimensi": "realistis"},
+    {"id": "r2", "teks": "Membuat kerajinan dari kayu atau logam di bengkel.", "dimensi": "realistis"},
+    {"id": "r3", "teks": "Berkebun dan merawat tanaman sampai berbunga atau berbuah.", "dimensi": "realistis"},
+    {"id": "r4", "teks": "Memasang ulang kursi atau engsel pintu yang longgar.", "dimensi": "realistis"},
+    {"id": "r5", "teks": "Berolahraga fisik yang menantangkan, misalnya panjat tebing atau renang.", "dimensi": "realistis"},
+    {"id": "r6", "teks": "Berkemah di alam terbuka dan menyiapkan peralatan sendiri.", "dimensi": "realistis"},
+    {"id": "i1", "teks": "Mencari tahu jawaban dari pertanyaan aneh, misalnya kenapa pelangi muncul.", "dimensi": "investigatif"},
+    {"id": "i2", "teks": "Menghitung kemungkinan suatu kejadian, misalnya peluang mendapatkan hadiah.", "dimensi": "investigatif"},
+    {"id": "i3", "teks": "Membaca artikel tentang penemuan baru di luar angkasa atau teknologi.", "dimensi": "investigatif"},
+    {"id": "i4", "teks": "Membandingkan dua penjelasan lalu memutuskan mana yang lebih masuk akal.", "dimensi": "investigatif"},
+    {"id": "i5", "teks": "Membuat program komputer sederhana untuk menyelesaikan tugas sehari-hari.", "dimensi": "investigatif"},
+    {"id": "i6", "teks": "Menguji apakah tips yang ramai dibahas itu memang benar.", "dimensi": "investigatif"},
+    {"id": "a1", "teks": "Menggambar sketsa karakter atau pemandangan di buku catatan.", "dimensi": "artistik"},
+    {"id": "a2", "teks": "Membuat komik strip pendek dengan karakter sendiri.", "dimensi": "artistik"},
+    {"id": "a3", "teks": "Menciptakan melodi atau nada baru.", "dimensi": "artistik"},
+    {"id": "a4", "teks": "Menghias ruangan atau sudut kamar dengan warna dan hiasan sendiri.", "dimensi": "artistik"},
+    {"id": "a5", "teks": "Membuat video pendek atau foto cerita dengan sudut pandang sendiri.", "dimensi": "artistik"},
+    {"id": "a6", "teks": "Menari mengikuti irama untuk mengungkapkan perasaan.", "dimensi": "artistik"},
+    {"id": "s1", "teks": "Menjelaskan pelajaran yang sulit kepada teman sampai ia paham.", "dimensi": "sosial"},
+    {"id": "s2", "teks": "Ikut kegiatan sukarelawan seperti bakti sosial atau aksi donor darah.", "dimensi": "sosial"},
+    {"id": "s3", "teks": "Membantu teman yang kesulitan beradaptasi di lingkungan baru.", "dimensi": "sosial"},
+    {"id": "s4", "teks": "Merawat anggota keluarga yang sedang sakit.", "dimensi": "sosial"},
+    {"id": "s5", "teks": "Memimpin diskusi kelompok agar semua orang mendapat giliran bicara.", "dimensi": "sosial"},
+    {"id": "s6", "teks": "Menjadi pendengar yang baik ketika teman sedang bercerita.", "dimensi": "sosial"},
+    {"id": "e1", "teks": "Meyakinkan teman-teman untuk ikut serta dalam acara yang kamu rancang.", "dimensi": "enterprising"},
+    {"id": "e2", "teks": "Mengelola uang kas kelas dan mengusulkan penggunaannya.", "dimensi": "enterprising"},
+    {"id": "e3", "teks": "Mengatur acara kelas, mulai dari membagi panitia sampai anggaran.", "dimensi": "enterprising"},
+    {"id": "e4", "teks": "Memimpin kelompok dan membagi tugas agar pekerjaan cepat selesai.", "dimensi": "enterprising"},
+    {"id": "e5", "teks": "Mewakili kelas menyampaikan usulan kepada guru atau kepala sekolah.", "dimensi": "enterprising"},
+    {"id": "e6", "teks": "Mengikuti lomba wirausaha atau debat.", "dimensi": "enterprising"},
+    {"id": "c1", "teks": "Menyiapkan jadwal piket dan jadwal belajar yang tertata setiap minggu.", "dimensi": "konvensional"},
+    {"id": "c2", "teks": "Membuat daftar lengkap dan mencentang setiap langkah yang sudah selesai.", "dimensi": "konvensional"},
+    {"id": "c3", "teks": "Menyimpan berkas dan dokumen dengan urutan yang mudah dicari.", "dimensi": "konvensional"},
+    {"id": "c4", "teks": "Menghitung total pengeluaran dan memastikan angkanya cocok.", "dimensi": "konvensional"},
+    {"id": "c5", "teks": "Mengelompokkan dan memberi label koleksi, misalnya buku atau berkas.", "dimensi": "konvensional"},
+    {"id": "c6", "teks": "Mengerjakan sesuatu dengan teliti agar tidak ada yang tertinggal.", "dimensi": "konvensional"}
+  ]
+}

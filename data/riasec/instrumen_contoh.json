@@ -1,0 +1,86 @@
+﻿{
+    "versi_instrumen":  "contoh-v0",
+    "sumber":  "contoh, bukan instrumen",
+    "contoh":  true,
+    "skala":  {
+                  "min":  1,
+                  "maks":  5,
+                  "label":  {
+                                "1":  "Sangat tidak suka",
+                                "2":  "Tidak suka",
+                                "3":  "Netral",
+                                "4":  "Suka",
+                                "5":  "Sangat suka"
+                            }
+              },
+    "dimensi":  [
+                    "realistis",
+                    "investigatif",
+                    "artistik",
+                    "sosial",
+                    "enterprising",
+                    "konvensional"
+                ],
+    "item":  [
+                 {
+                     "id":  "contoh-realistis-1",
+                     "teks":  "[CONTOH] Butir realistis nomor 1 (bukan instrumen)",
+                     "dimensi":  "realistis"
+                 },
+                 {
+                     "id":  "contoh-realistis-2",
+                     "teks":  "[CONTOH] Butir realistis nomor 2 (bukan instrumen)",
+                     "dimensi":  "realistis"
+                 },
+                 {
+                     "id":  "contoh-investigatif-1",
+                     "teks":  "[CONTOH] Butir investigatif nomor 1 (bukan instrumen)",
+                     "dimensi":  "investigatif"
+                 },
+                 {
+                     "id":  "contoh-investigatif-2",
+                     "teks":  "[CONTOH] Butir investigatif nomor 2 (bukan instrumen)",
+                     "dimensi":  "investigatif"
+                 },
+                 {
+                     "id":  "contoh-artistik-1",
+                     "teks":  "[CONTOH] Butir artistik nomor 1 (bukan instrumen)",
+                     "dimensi":  "artistik"
+                 },
+                 {
+                     "id":  "contoh-artistik-2",
+                     "teks":  "[CONTOH] Butir artistik nomor 2 (bukan instrumen)",
+                     "dimensi":  "artistik"
+                 },
+                 {
+                     "id":  "contoh-sosial-1",
+                     "teks":  "[CONTOH] Butir sosial nomor 1 (bukan instrumen)",
+                     "dimensi":  "sosial"
+                 },
+                 {
+                     "id":  "contoh-sosial-2",
+                     "teks":  "[CONTOH] Butir sosial nomor 2 (bukan instrumen)",
+                     "dimensi":  "sosial"
+                 },
+                 {
+                     "id":  "contoh-enterprising-1",
+                     "teks":  "[CONTOH] Butir enterprising nomor 1 (bukan instrumen)",
+                     "dimensi":  "enterprising"
+                 },
+                 {
+                     "id":  "contoh-enterprising-2",
+                     "teks":  "[CONTOH] Butir enterprising nomor 2 (bukan instrumen)",
+                     "dimensi":  "enterprising"
+                 },
+                 {
+                     "id":  "contoh-konvensional-1",
+                     "teks":  "[CONTOH] Butir konvensional nomor 1 (bukan instrumen)",
+                     "dimensi":  "konvensional"
+                 },
+                 {
+                     "id":  "contoh-konvensional-2",
+                     "teks":  "[CONTOH] Butir konvensional nomor 2 (bukan instrumen)",
+                     "dimensi":  "konvensional"
+                 }
+             ]
+}

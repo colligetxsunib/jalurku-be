@@ -15,6 +15,7 @@ COPY alembic.ini ./
 COPY app ./app
 COPY config ./config
 COPY data/seed ./data/seed
+COPY data/riasec ./data/riasec
 COPY data/draft ./data/draft
 COPY scripts ./scripts
 
