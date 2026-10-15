@@ -48,6 +48,23 @@ rag:
 minat:
   dimensi: [realistis, investigatif, artistik, sosial, enterprising, konvensional]
 
+# Tes minat RIASEC (GET /riasec/questions, POST /riasec/submit). Template tetap, deterministik, tanpa LLM.
+# Butir dibaca dari data/riasec/instrumen_v1.json (butir orisinal tim berdasarkan teori Holland,
+# belum divalidasi psikometrik; bukan dari kode ini).
+# skor_norm dimensi = (rerata jawaban - skala.min) / (skala.maks - skala.min). Semua angka di bawah
+# placeholder awal yang BELUM dikalibrasi.
+riasec:
+  min_terjawab_per_dimensi: 2          # di bawah ini skor dimensi tidak dihitung
+  min_rasio_terjawab_per_dimensi: 0.6  # terjawab/total butir dimensi di bawah ini = keyakinan rendah
+  min_terjawab_untuk_seragam: 6        # cek jawaban seragam hanya bila butir terjawab >= ini
+  maks_rasio_jawaban_seragam: 0.85     # >= bagian ini bernilai sama = jawaban seragam (keyakinan rendah)
+  min_selisih_skor: 0.15               # skor tertinggi - terendah di bawah ini = profil datar (rendah)
+  jumlah_dimensi_kode: 3               # Holland code = tiga dimensi teratas
+  kode_huruf: {realistis: R, investigatif: I, artistik: A, sosial: S, enterprising: E, konvensional: C}
+  pernyataan: >-
+    Ini bukan tes psikologi dan bukan diagnosis. Hasilnya hanya gambaran minat awal untuk membantu
+    eksplorasi jurusan.
+
 # Batas validasi profil (FR-P2). Tahun lulus diukur terhadap tahun siklus pendaftaran aktif.
 profil:
   tahun_lulus_mundur: 15

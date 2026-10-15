@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     app_config_path: str = str(DEFAULT_CONFIG_PATH)
     seed_dir: str = str(ROOT_DIR / "data" / "seed")
     dokumen_dir: str = str(ROOT_DIR / "data" / "dokumen")
+    riasec_dir: str = str(ROOT_DIR / "data" / "riasec")  # folder instrumen tes minat (instrumen_v1.json)
     draf_dir: str = str(ROOT_DIR / "data" / "draft")  # data eksplorasi DRAF, belum terverifikasi
 
     @field_validator("cors_origins")
@@ -142,6 +143,24 @@ class RagConfig(_Strict):
 
 class MinatConfig(_Strict):
     dimensi: list[str] = Field(min_length=1)
+
+
+class RiasecConfig(_Strict):
+    """Skoring dan cek kualitas tes minat (deterministik, tanpa LLM). Semua angka bisa dikalibrasi."""
+
+    # Dimensi dengan butir terjawab di bawah ini TIDAK dihitung skornya.
+    min_terjawab_per_dimensi: int = Field(ge=1)
+    # Terjawab/total butir sebuah dimensi di bawah ini = keyakinan rendah (skor tetap dihitung).
+    min_rasio_terjawab_per_dimensi: float = Field(ge=0, le=1)
+    # Cek keseragaman hanya dilakukan bila jumlah butir terjawab minimal ini (sampel kecil tidak bermakna).
+    min_terjawab_untuk_seragam: int = Field(ge=2)
+    # Bagian jawaban dengan nilai yang sama >= ini = jawaban seragam (mis. semua "3" atau semua "5").
+    maks_rasio_jawaban_seragam: float = Field(gt=0, le=1)
+    # Selisih skor_norm tertinggi dan terendah di bawah ini = profil datar (minat tidak membedakan).
+    min_selisih_skor: float = Field(ge=0, le=1)
+    jumlah_dimensi_kode: int = Field(ge=1, le=6)
+    kode_huruf: dict[str, str]  # dimensi -> huruf Holland code
+    pernyataan: str = Field(min_length=1)  # wajib menyertai setiap hasil
 
 
 class ProfilConfig(_Strict):
@@ -377,6 +396,7 @@ class AppConfig(_Strict):
     embedding: EmbeddingConfig
     rag: RagConfig
     minat: MinatConfig
+    riasec: RiasecConfig
     profil: ProfilConfig
     snbp: JalurPenilaianConfig
     snbt: JalurPenilaianConfig
@@ -384,6 +404,18 @@ class AppConfig(_Strict):
     query: QueryConfig
     teks: TeksConfig
     explore: ExploreConfig
+
+    @model_validator(mode="after")
+    def _riasec_konsisten(self) -> AppConfig:
+        dimensi = set(self.minat.dimensi)
+        if set(self.riasec.kode_huruf) != dimensi:
+            raise ValueError("riasec.kode_huruf harus memuat tepat dimensi di minat.dimensi")
+        huruf = list(self.riasec.kode_huruf.values())
+        if any(len(h) != 1 for h in huruf) or len(set(huruf)) != len(huruf):
+            raise ValueError("riasec.kode_huruf: satu huruf unik per dimensi")
+        if self.riasec.jumlah_dimensi_kode > len(dimensi):
+            raise ValueError("riasec.jumlah_dimensi_kode melebihi jumlah dimensi")
+        return self
 
     @model_validator(mode="after")
     def _dimensi_explore_dikenal(self) -> AppConfig:

@@ -33,6 +33,7 @@ from app.llm.client import LLMClient
 from app.llm.service import LLMService, buat_client
 from app.services.draf_eksplorasi import muat_draf
 from app.services.refdata import RefDataProvider
+from app.services.riasec import muat_instrumen
 from app.services.sessions import hapus_kedaluwarsa
 
 log = logging.getLogger("jalurku")
@@ -117,6 +118,7 @@ def create_app(
     app.state.session_factory = make_session_factory(engine)
     app.state.limiter = SlidingWindowLimiter()
     app.state.refdata = RefDataProvider()
+    app.state.riasec = muat_instrumen(settings.riasec_dir, config)  # ConfigError = gagal start
     app.state.draf = muat_draf(settings.draf_dir, config.minat.dimensi)  # draf, belum terverifikasi
     # Satu LLMService per proses: semaphore konkurensi bersifat global (kuota per API key).
     app.state.llm = LLMService(llm_client or buat_client(settings, config), config)
