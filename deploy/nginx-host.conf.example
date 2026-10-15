@@ -1,0 +1,49 @@
+# Contoh server block nginx di HOST untuk JalurKu (mode HTTP dulu).
+#
+# Cara pakai: salin isi ini ke berkas vhost baru (mis. /etc/nginx/sites-available/jalurku-api),
+# ganti server_name dengan subdomain API, buat symlink ke sites-enabled, lalu:
+#   nginx -t && systemctl reload nginx
+# Setelah itu: certbot --nginx -d jalurku-api.domainmu.com
+# (certbot menambahkan server block HTTPS sendiri; JANGAN menulis blok 443 manual di sini.)
+#
+# APP_HOST_PORT di deploy/.env.prod dan proxy_pass di bawah HARUS sama (bawaan 8000).
+
+server {
+    listen 80;
+    server_name jalurku-api.domainmu.com;
+
+    # API hanya mendengar di loopback; hanya path /api/ yang diteruskan ke sana.
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        client_max_body_size 128k;
+        proxy_read_timeout 60s;
+    }
+
+    # Unggah berkas admin butuh badan lebih besar (samakan dengan batas aplikasi 40 MB).
+    location /api/v1/admin/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        client_max_body_size 40m;
+        proxy_read_timeout 60s;
+    }
+
+    # Opsional, bila smoke test --lewat-proxy dipakai dari luar dan vhost ini belum
+    # memasang header keamanan: dua baris di bawah memenuhinya. Hapus pagar bila dipakai.
+    # add_header X-Content-Type-Options "nosniff" always;
+    # add_header Cache-Control "no-store" always;
+
+    # Jalur selain /api/ TIDAK diteruskan ke aplikasi (situs lain di host tetap hidup).
+}
