@@ -80,9 +80,9 @@
     ]
   },
   "harapan": {
-    "hasil_terverifikasi": false,
-    "terakhir_diverifikasi": null,
-    "diverifikasi_oleh": null,
+    "hasil_terverifikasi": true,
+    "terakhir_diverifikasi": "10-Oktober-2026",
+    "diverifikasi_oleh": "Rakhis-Yudha",
     "gate": {
       "SNBP": "lolos",
       "SNBT": "lolos"

@@ -1,186 +1,186 @@
 prodi_id,ptn_id,nama,rumpun,akreditasi,daya_tampung,peminat_tahun_lalu,mapel_penentu,tag_minat,jalur_dibuka,sumber_url,terakhir_diverifikasi,jenjang,program
-ui-ilmu-komputer,ui,Ilmu Komputer,Teknologi Informasi,,75,2132,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-akuntansi,ui,Akuntansi,Ekonomi dan Bisnis,,90,2720,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-hukum,ui,Ilmu Hukum,Hukum,,171,4434,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-kedokteran,ui,Pendidikan Dokter,Kesehatan,,90,3330,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-komunikasi,ui,Ilmu Komunikasi,Sosial dan Komunikasi,,44,2412,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-dkv,ui,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-ui-psikologi,ui,Ilmu Psikologi,Psikologi,,99,3506,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-manajemen,ui,Manajemen,Ekonomi dan Bisnis,,90,2782,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-hi,ui,Ilmu Hubungan Internasional,Sosial dan Politik,,18,1281,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-teknik-sipil,ui,Teknik Sipil,Teknik,,60,1258,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-teknik-industri,ui,Teknik Industri,Teknik,,71,1963,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-teknik-mesin,ui,Teknik Mesin,Teknik,,60,1152,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-teknik-kimia,ui,Teknik Kimia,Teknik,,44,765,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-arsitektur,ui,Arsitektur,Arsitektur dan Desain,,24,824,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-teknik-lingkungan,ui,Teknik Lingkungan,Teknik,,36,775,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-kedokteran-gigi,ui,Pendidikan Dokter Gigi,Kesehatan,,47,1114,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ui-teknik-elektro,ui,Teknik Elektro,Teknik,,45,916,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana,akademik
-ugm-ilmu-komputer,ugm,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-akuntansi,ugm,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-hukum,ugm,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-kedokteran,ugm,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-komunikasi,ugm,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-dkv,ugm,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-psikologi,ugm,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-manajemen,ugm,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-hi,ugm,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-teknik-sipil,ugm,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-teknik-industri,ugm,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-teknik-mesin,ugm,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-teknik-kimia,ugm,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-arsitektur,ugm,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-teknik-lingkungan,ugm,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-kedokteran-gigi,ugm,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-ugm-teknik-elektro,ugm,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-itb-ilmu-komputer,itb,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-itb-akuntansi,itb,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-itb-hukum,itb,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-itb-kedokteran,itb,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-itb-komunikasi,itb,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-itb-dkv,itb,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-itb-psikologi,itb,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-itb-manajemen,itb,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-itb-hi,itb,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-itb-teknik-sipil,itb,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-itb-teknik-industri,itb,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-itb-teknik-mesin,itb,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-itb-teknik-kimia,itb,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-itb-arsitektur,itb,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-itb-teknik-lingkungan,itb,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-itb-kedokteran-gigi,itb,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-itb-teknik-elektro,itb,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unair-ilmu-komputer,unair,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-unair-akuntansi,unair,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-unair-hukum,unair,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-unair-kedokteran,unair,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-unair-komunikasi,unair,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-unair-dkv,unair,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-unair-psikologi,unair,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-unair-manajemen,unair,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-unair-hi,unair,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-unair-teknik-sipil,unair,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unair-teknik-industri,unair,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unair-teknik-mesin,unair,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unair-teknik-kimia,unair,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unair-arsitektur,unair,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-unair-teknik-lingkungan,unair,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unair-kedokteran-gigi,unair,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-unair-teknik-elektro,unair,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-ilmu-komputer,ipb,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-akuntansi,ipb,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-hukum,ipb,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-kedokteran,ipb,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-komunikasi,ipb,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-dkv,ipb,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-psikologi,ipb,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-manajemen,ipb,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-hi,ipb,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-teknik-sipil,ipb,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-teknik-industri,ipb,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-teknik-mesin,ipb,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-teknik-kimia,ipb,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-arsitektur,ipb,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-teknik-lingkungan,ipb,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-kedokteran-gigi,ipb,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-ipb-teknik-elektro,ipb,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ub-ilmu-komputer,ub,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-ub-akuntansi,ub,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-ub-hukum,ub,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-ub-kedokteran,ub,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-ub-komunikasi,ub,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-ub-dkv,ub,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-ub-psikologi,ub,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-ub-manajemen,ub,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-ub-hi,ub,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-ub-teknik-sipil,ub,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ub-teknik-industri,ub,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ub-teknik-mesin,ub,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ub-teknik-kimia,ub,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ub-arsitektur,ub,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-ub-teknik-lingkungan,ub,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ub-kedokteran-gigi,ub,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-ub-teknik-elektro,ub,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-its-ilmu-komputer,its,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-its-akuntansi,its,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-its-hukum,its,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-its-kedokteran,its,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-its-komunikasi,its,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-its-dkv,its,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-its-psikologi,its,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-its-manajemen,its,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-its-hi,its,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-its-teknik-sipil,its,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-its-teknik-industri,its,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-its-teknik-mesin,its,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-its-teknik-kimia,its,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-its-arsitektur,its,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-its-teknik-lingkungan,its,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-its-kedokteran-gigi,its,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-its-teknik-elektro,its,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-ilmu-komputer,unhas,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-akuntansi,unhas,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-hukum,unhas,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-kedokteran,unhas,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-komunikasi,unhas,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-dkv,unhas,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-psikologi,unhas,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-manajemen,unhas,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-hi,unhas,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-teknik-sipil,unhas,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-teknik-industri,unhas,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-teknik-mesin,unhas,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-teknik-kimia,unhas,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-arsitektur,unhas,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-teknik-lingkungan,unhas,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-kedokteran-gigi,unhas,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-unhas-teknik-elektro,unhas,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-undip-ilmu-komputer,undip,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-undip-akuntansi,undip,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-undip-hukum,undip,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-undip-kedokteran,undip,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-undip-komunikasi,undip,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-undip-dkv,undip,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-undip-psikologi,undip,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-undip-manajemen,undip,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-undip-hi,undip,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-undip-teknik-sipil,undip,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-undip-teknik-industri,undip,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-undip-teknik-mesin,undip,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-undip-teknik-kimia,undip,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-undip-arsitektur,undip,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-undip-teknik-lingkungan,undip,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-undip-kedokteran-gigi,undip,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-undip-teknik-elektro,undip,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-uns-ilmu-komputer,uns,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,2026-10-14,Sarjana,akademik
-uns-akuntansi,uns,Akuntansi,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-uns-hukum,uns,Hukum,Hukum,,,,,,,,2026-10-14,Sarjana,akademik
-uns-kedokteran,uns,Kedokteran Umum,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-uns-komunikasi,uns,Komunikasi,Sosial dan Komunikasi,,,,,,,,2026-10-14,Sarjana,akademik
-uns-dkv,uns,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-uns-psikologi,uns,Psikologi,Psikologi,,,,,,,,2026-10-14,Sarjana,akademik
-uns-manajemen,uns,Manajemen,Ekonomi dan Bisnis,,,,,,,,2026-10-14,Sarjana,akademik
-uns-hi,uns,Hubungan Internasional,Sosial dan Politik,,,,,,,,2026-10-14,Sarjana,akademik
-uns-teknik-sipil,uns,Teknik Sipil,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-uns-teknik-industri,uns,Teknik Industri,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-uns-teknik-mesin,uns,Teknik Mesin,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-uns-teknik-kimia,uns,Teknik Kimia,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-uns-arsitektur,uns,Arsitektur,Arsitektur dan Desain,,,,,,,,2026-10-14,Sarjana,akademik
-uns-teknik-lingkungan,uns,Teknik Lingkungan,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-uns-kedokteran-gigi,uns,Kedokteran Gigi,Kesehatan,,,,,,,,2026-10-14,Sarjana,akademik
-uns-teknik-elektro,uns,Teknik Elektro,Teknik,,,,,,,,2026-10-14,Sarjana,akademik
-ui-v-hubungan-masyarakat,ui,Hubungan Masyarakat,Sosial dan Komunikasi,,30,4950,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-akuntansi-d3,ui,Akuntansi,Ekonomi dan Bisnis,,30,3364,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-administrasi-rumah-sakit,ui,Administrasi Rumah Sakit,Kesehatan,,30,3016,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-administrasi-perpajakan,ui,Administrasi Perpajakan,Ekonomi dan Bisnis,,30,2965,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-periklanan-kreatif,ui,Periklanan Kreatif,Sosial dan Komunikasi,,30,2943,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-penyiaran-multimedia,ui,Penyiaran Multimedia,Sosial dan Komunikasi,,30,2908,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-administrasi-keuangan-perbankan,ui,Administrasi Keuangan dan Perbankan,Ekonomi dan Bisnis,,30,2767,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-administrasi-perkantoran,ui,Administrasi Perkantoran,Ekonomi dan Bisnis,,30,2389,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-administrasi-asuransi-aktuaria,ui,Administrasi Asuransi dan Aktuaria,Ekonomi dan Bisnis,,30,1846,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Diploma Tiga,vokasi
-ui-v-bisnis-kreatif,ui,Bisnis Kreatif,Ekonomi dan Bisnis,,47,4167,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana Terapan,vokasi
-ui-v-produksi-media,ui,Produksi Media,Sosial dan Komunikasi,,47,3374,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana Terapan,vokasi
-ui-v-fisioterapi,ui,Fisioterapi,Kesehatan,,47,2905,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana Terapan,vokasi
-ui-v-manajemen-bisnis-pariwisata,ui,Manajemen Bisnis Pariwisata,Ekonomi dan Bisnis,,47,2219,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana Terapan,vokasi
-ui-v-manajemen-rekod-arsip,ui,Manajemen Rekod dan Arsip,Sosial dan Komunikasi,,47,2188,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana Terapan,vokasi
-ui-v-terapi-okupasi,ui,Terapi Okupasi,Kesehatan,,47,2173,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-14,Sarjana Terapan,vokasi
+ui-ilmu-komputer,ui,Ilmu Komputer,Teknologi Informasi,,75,2132,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-akuntansi,ui,Akuntansi,Ekonomi dan Bisnis,,90,2720,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-hukum,ui,Ilmu Hukum,Hukum,,171,4434,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-kedokteran,ui,Pendidikan Dokter,Kesehatan,,90,3330,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-komunikasi,ui,Ilmu Komunikasi,Sosial dan Komunikasi,,44,2412,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-dkv,ui,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+ui-psikologi,ui,Ilmu Psikologi,Psikologi,,99,3506,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-manajemen,ui,Manajemen,Ekonomi dan Bisnis,,90,2782,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-hi,ui,Ilmu Hubungan Internasional,Sosial dan Politik,,18,1281,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-teknik-sipil,ui,Teknik Sipil,Teknik,,60,1258,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-teknik-industri,ui,Teknik Industri,Teknik,,71,1963,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-teknik-mesin,ui,Teknik Mesin,Teknik,,60,1152,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-teknik-kimia,ui,Teknik Kimia,Teknik,,44,765,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-arsitektur,ui,Arsitektur,Arsitektur dan Desain,,24,824,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-teknik-lingkungan,ui,Teknik Lingkungan,Teknik,,36,775,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-kedokteran-gigi,ui,Pendidikan Dokter Gigi,Kesehatan,,47,1114,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ui-teknik-elektro,ui,Teknik Elektro,Teknik,,45,916,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana,akademik
+ugm-ilmu-komputer,ugm,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+ugm-akuntansi,ugm,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+ugm-hukum,ugm,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+ugm-kedokteran,ugm,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+ugm-komunikasi,ugm,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+ugm-dkv,ugm,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+ugm-psikologi,ugm,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+ugm-manajemen,ugm,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+ugm-hi,ugm,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+ugm-teknik-sipil,ugm,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+ugm-teknik-industri,ugm,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+ugm-teknik-mesin,ugm,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+ugm-teknik-kimia,ugm,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+ugm-arsitektur,ugm,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+ugm-teknik-lingkungan,ugm,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+ugm-kedokteran-gigi,ugm,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+ugm-teknik-elektro,ugm,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+itb-ilmu-komputer,itb,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+itb-akuntansi,itb,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+itb-hukum,itb,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+itb-kedokteran,itb,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+itb-komunikasi,itb,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+itb-dkv,itb,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+itb-psikologi,itb,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+itb-manajemen,itb,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+itb-hi,itb,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+itb-teknik-sipil,itb,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+itb-teknik-industri,itb,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+itb-teknik-mesin,itb,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+itb-teknik-kimia,itb,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+itb-arsitektur,itb,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+itb-teknik-lingkungan,itb,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+itb-kedokteran-gigi,itb,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+itb-teknik-elektro,itb,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+unair-ilmu-komputer,unair,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+unair-akuntansi,unair,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+unair-hukum,unair,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+unair-kedokteran,unair,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+unair-komunikasi,unair,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+unair-dkv,unair,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+unair-psikologi,unair,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+unair-manajemen,unair,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+unair-hi,unair,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+unair-teknik-sipil,unair,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+unair-teknik-industri,unair,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+unair-teknik-mesin,unair,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+unair-teknik-kimia,unair,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+unair-arsitektur,unair,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+unair-teknik-lingkungan,unair,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+unair-kedokteran-gigi,unair,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+unair-teknik-elektro,unair,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+ipb-ilmu-komputer,ipb,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+ipb-akuntansi,ipb,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+ipb-hukum,ipb,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+ipb-kedokteran,ipb,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+ipb-komunikasi,ipb,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+ipb-dkv,ipb,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+ipb-psikologi,ipb,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+ipb-manajemen,ipb,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+ipb-hi,ipb,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+ipb-teknik-sipil,ipb,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+ipb-teknik-industri,ipb,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+ipb-teknik-mesin,ipb,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+ipb-teknik-kimia,ipb,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+ipb-arsitektur,ipb,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+ipb-teknik-lingkungan,ipb,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+ipb-kedokteran-gigi,ipb,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+ipb-teknik-elektro,ipb,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+ub-ilmu-komputer,ub,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+ub-akuntansi,ub,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+ub-hukum,ub,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+ub-kedokteran,ub,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+ub-komunikasi,ub,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+ub-dkv,ub,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+ub-psikologi,ub,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+ub-manajemen,ub,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+ub-hi,ub,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+ub-teknik-sipil,ub,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+ub-teknik-industri,ub,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+ub-teknik-mesin,ub,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+ub-teknik-kimia,ub,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+ub-arsitektur,ub,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+ub-teknik-lingkungan,ub,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+ub-kedokteran-gigi,ub,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+ub-teknik-elektro,ub,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+its-ilmu-komputer,its,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+its-akuntansi,its,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+its-hukum,its,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+its-kedokteran,its,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+its-komunikasi,its,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+its-dkv,its,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+its-psikologi,its,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+its-manajemen,its,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+its-hi,its,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+its-teknik-sipil,its,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+its-teknik-industri,its,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+its-teknik-mesin,its,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+its-teknik-kimia,its,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+its-arsitektur,its,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+its-teknik-lingkungan,its,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+its-kedokteran-gigi,its,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+its-teknik-elektro,its,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+unhas-ilmu-komputer,unhas,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+unhas-akuntansi,unhas,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+unhas-hukum,unhas,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+unhas-kedokteran,unhas,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+unhas-komunikasi,unhas,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+unhas-dkv,unhas,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+unhas-psikologi,unhas,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+unhas-manajemen,unhas,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+unhas-hi,unhas,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+unhas-teknik-sipil,unhas,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+unhas-teknik-industri,unhas,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+unhas-teknik-mesin,unhas,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+unhas-teknik-kimia,unhas,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+unhas-arsitektur,unhas,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+unhas-teknik-lingkungan,unhas,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+unhas-kedokteran-gigi,unhas,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+unhas-teknik-elektro,unhas,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+undip-ilmu-komputer,undip,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+undip-akuntansi,undip,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+undip-hukum,undip,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+undip-kedokteran,undip,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+undip-komunikasi,undip,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+undip-dkv,undip,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+undip-psikologi,undip,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+undip-manajemen,undip,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+undip-hi,undip,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+undip-teknik-sipil,undip,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+undip-teknik-industri,undip,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+undip-teknik-mesin,undip,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+undip-teknik-kimia,undip,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+undip-arsitektur,undip,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+undip-teknik-lingkungan,undip,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+undip-kedokteran-gigi,undip,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+undip-teknik-elektro,undip,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+uns-ilmu-komputer,uns,Teknologi Informasi/Ilmu Komputer,Teknologi Informasi,,,,,,,,,Sarjana,akademik
+uns-akuntansi,uns,Akuntansi,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+uns-hukum,uns,Hukum,Hukum,,,,,,,,,Sarjana,akademik
+uns-kedokteran,uns,Kedokteran Umum,Kesehatan,,,,,,,,,Sarjana,akademik
+uns-komunikasi,uns,Komunikasi,Sosial dan Komunikasi,,,,,,,,,Sarjana,akademik
+uns-dkv,uns,Desain Komunikasi Visual,Seni dan Desain,,,,,,,,,Sarjana,akademik
+uns-psikologi,uns,Psikologi,Psikologi,,,,,,,,,Sarjana,akademik
+uns-manajemen,uns,Manajemen,Ekonomi dan Bisnis,,,,,,,,,Sarjana,akademik
+uns-hi,uns,Hubungan Internasional,Sosial dan Politik,,,,,,,,,Sarjana,akademik
+uns-teknik-sipil,uns,Teknik Sipil,Teknik,,,,,,,,,Sarjana,akademik
+uns-teknik-industri,uns,Teknik Industri,Teknik,,,,,,,,,Sarjana,akademik
+uns-teknik-mesin,uns,Teknik Mesin,Teknik,,,,,,,,,Sarjana,akademik
+uns-teknik-kimia,uns,Teknik Kimia,Teknik,,,,,,,,,Sarjana,akademik
+uns-arsitektur,uns,Arsitektur,Arsitektur dan Desain,,,,,,,,,Sarjana,akademik
+uns-teknik-lingkungan,uns,Teknik Lingkungan,Teknik,,,,,,,,,Sarjana,akademik
+uns-kedokteran-gigi,uns,Kedokteran Gigi,Kesehatan,,,,,,,,,Sarjana,akademik
+uns-teknik-elektro,uns,Teknik Elektro,Teknik,,,,,,,,,Sarjana,akademik
+ui-v-hubungan-masyarakat,ui,Hubungan Masyarakat,Sosial dan Komunikasi,,30,4950,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-akuntansi-d3,ui,Akuntansi,Ekonomi dan Bisnis,,30,3364,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-administrasi-rumah-sakit,ui,Administrasi Rumah Sakit,Kesehatan,,30,3016,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-administrasi-perpajakan,ui,Administrasi Perpajakan,Ekonomi dan Bisnis,,30,2965,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-periklanan-kreatif,ui,Periklanan Kreatif,Sosial dan Komunikasi,,30,2943,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-penyiaran-multimedia,ui,Penyiaran Multimedia,Sosial dan Komunikasi,,30,2908,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-administrasi-keuangan-perbankan,ui,Administrasi Keuangan dan Perbankan,Ekonomi dan Bisnis,,30,2767,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-administrasi-perkantoran,ui,Administrasi Perkantoran,Ekonomi dan Bisnis,,30,2389,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-administrasi-asuransi-aktuaria,ui,Administrasi Asuransi dan Aktuaria,Ekonomi dan Bisnis,,30,1846,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Diploma Tiga,vokasi
+ui-v-bisnis-kreatif,ui,Bisnis Kreatif,Ekonomi dan Bisnis,,47,4167,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana Terapan,vokasi
+ui-v-produksi-media,ui,Produksi Media,Sosial dan Komunikasi,,47,3374,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana Terapan,vokasi
+ui-v-fisioterapi,ui,Fisioterapi,Kesehatan,,47,2905,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana Terapan,vokasi
+ui-v-manajemen-bisnis-pariwisata,ui,Manajemen Bisnis Pariwisata,Ekonomi dan Bisnis,,47,2219,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana Terapan,vokasi
+ui-v-manajemen-rekod-arsip,ui,Manajemen Rekod dan Arsip,Sosial dan Komunikasi,,47,2188,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana Terapan,vokasi
+ui-v-terapi-okupasi,ui,Terapi Okupasi,Kesehatan,,47,2173,,,SNBT,https://www.pintarly.id/ptn/universitas-indonesia,2026-10-15,Sarjana Terapan,vokasi
