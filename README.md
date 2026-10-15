@@ -4,6 +4,8 @@ Backend untuk JalurKu, asisten siswa SMA/sederajat dalam menyusun strategi pilih
 
 > **Status: prototipe.** Hanya untuk persona fiktif. Jangan dipakai untuk data siswa nyata sebelum konfirmasi hukum soal data anak (UU PDP) dan persetujuan orang tua/wali. Semua data resmi di repositori ini **belum diverifikasi manusia** (lihat [bagian data](#9-data-dan-verifikasi)).
 
+> **Backend produksi:** https://jalurku-api.ravedeprinz.me
+
 ---
 
 ## Daftar isi
@@ -284,7 +286,7 @@ Koleksi siap pakai ada di [`api-collection/`](api-collection/) dalam format Post
 |---|---|
 | `JalurKu.postman_collection.json` | 60 request dengan deskripsi, contoh bodi dari persona, dan skrip uji otomatis |
 | `JalurKu.lokal.postman_environment.json` | `baseUrl = http://localhost:8000` |
-| `JalurKu.produksi.postman_environment.json` | `baseUrl = //Not Deployed Yet`|
+| `JalurKu.produksi.postman_environment.json` | `baseUrl = https://jalurku-api.ravedeprinz.me`|
 
 Cara memakai:
 
@@ -563,6 +565,8 @@ Semua bobot, batas, dan isi matriks memakai **nilai bawaan yang belum dikalibras
 ---
 
 ## 11. Deploy produksi
+
+Backend produksi sudah live di **https://jalurku-api.ravedeprinz.me** (`/api/v1`, cek `GET /health`).
 
 Satu server dengan Docker Compose: `nginx` (satu-satunya yang membuka port 80/443) → `api` → `db`, ditambah `certbot` untuk pembaruan sertifikat otomatis. File ada di `deploy/`.
 
