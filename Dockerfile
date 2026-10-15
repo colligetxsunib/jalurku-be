@@ -24,4 +24,4 @@ USER appuser
 EXPOSE 8000
 # Migrasi dijalankan sebelum server naik. IP klien dibaca aplikasi dari X-Forwarded-For hanya
 # bila proxy ada di rate_limit.proxy_tepercaya (config/app.yaml), jadi uvicorn tidak ikut mengubah.
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:build_app --factory --host 0.0.0.0 --port 8000 --no-proxy-headers"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:build_app --factory --host 0.0.0.0 --port 8000 --no-proxy-headers --no-server-header"]
