@@ -858,6 +858,7 @@ Yang **tidak boleh dipotong**: gate, penilaian SNBT, sesi + consent + hapus data
 | 13 Okt 2026 | 0.3 | Penyusunan ulang, ID FR dipertahankan; kriteria penerimaan, spesifikasi API, dan Lampiran A ditambahkan |
 | 13 Okt 2026 | 1.0 | **Pembekuan.** Keputusan embedding, ringkasan cetak/PDF, consent anak, `/query` mode `jelaskan` dengan konteks dari server, `X-Admin-Key`, persona demo, dan matriks SNBP 3×3 dimasukkan. Rumus margin SNBP dihapus |
 | 14 Okt 2026 | 1.1 | **Tindak lanjut sembilan keputusan pemilik data.** Pita keketatan SNBT dihitung per program; label penilaian "indikatif, belum dikalibrasi"; skala skor tryout dinonaktifkan; prodi tanpa daya tampung tidak dihitung terverifikasi; golden set RAG memakai 23 baris dengan pengisian halaman dari PDF; catatan "demo memakai data fiktif" dikirim lewat API; persona Rani dan Dimas diperbarui sesuai hasil golden. Rincian di §18.1 dan §18.2 |
+| 15 Okt 2026 | 1.2 | **Stabilisasi sebelum submit.** Rantai cadangan model LLM (503 diulang sekali; 404, 429, 503, timeout pindah ke model cadangan), `timeout_detik` 10; prompt RAG diperlengkap; endpoint tes minat RIASEC; pertanyaan minat di `/query` dialihkan ke Eksplorasi; data eksplorasi draf terpisah; sesi demo 72 jam; `snpmb-faq` opsional; narasi `/summary` diuji ke API nyata; angka akhir golden RAG. Tidak ada perubahan logika keputusan (gate, kategori, strategi). Rincian di §18.3 sampai §18.5 |
 
 ### 18.1 Perubahan kontrak dan skema sejak v1.0
 
@@ -877,12 +878,45 @@ Yang **tidak boleh dipotong**: gate, penilaian SNBT, sesi + consent + hapus data
 - **Data keketatan hanya UI SNBT** (31 prodi). Keketatan SNBP, sembilan PTN lain, dan `acuan_skor_snbt.csv` dikosongkan. Hasilnya `belum_ada_acuan` dan berstatus `belum_diverifikasi`. Demo hanya UI.
 - **Tier SNBT memakai proksi rapor** dengan keyakinan rendah.
 - **Status verifikasi per berkas.** Per 14 Okt 2026, 4 dari 6 CSV bertanggal (`config_ketentuan`, `dokumen_wajib`, `ptn`, `rule_gate`). `prodi.csv` dan `dokumen_rag_metadata.csv` belum bertanggal. Tanggal hanya diisi manusia.
-- **Verifikasi persona.** Pemilik data memverifikasi persona Rani dan mengisi `hasil_terverifikasi` sendiri. Persona Dimas, Budi, Sinta, dan 33 kasus `gate.json` tetap `hasil_terverifikasi: false`; hasil golden berfungsi sebagai kunci regresi, bukan bukti kebenaran.
-- **RAG dan Gemini belum dijalankan dengan kunci nyata.** Halaman pada golden RAG baru terisi sebagian; sisanya berstatus perkiraan atau tidak ditemukan dan perlu dicek manual.
+- **Verifikasi persona.** Belum ada satu pun persona yang terverifikasi (`hasil_terverifikasi: false` pada keempat persona, termasuk Rani). Verifikasi Rani menunggu pemilik data mengisi `hasil_terverifikasi`, `terakhir_diverifikasi`, dan `diverifikasi_oleh` sendiri di `config/personas/rani.json`. Persona Dimas, Budi, Sinta, dan 33 kasus `gate.json` juga tetap `false`; hasil golden berfungsi sebagai kunci regresi, bukan bukti kebenaran.
+- **RAG dan Gemini sudah dijalankan dengan kunci nyata** (15 Okt 2026, lihat §18.4 dan §18.5). Halaman pada golden RAG untuk 13 pertanyaan dalam cakupan disiapkan lembar kerjanya di `reports/lembar_verifikasi.csv` (6 `ditemukan`, 7 `perkiraan`); kolom `halaman` di `golden_set.csv` sendiri menunggu pemeriksaan manusia, tidak diisi otomatis.
 - **Hukum data anak.** Konfirmasi hukum belum dikerjakan sebelum submit. Ini **syarat sebelum peluncuran nyata**. Sampai saat itu UI menampilkan catatan "demo memakai data fiktif".
 - **Eksplorasi** memakai klasifikasi rumpun awal (draft, belum diverifikasi). Data `tag_minat`, `mapel_penentu`, dan `profesi.csv` dikerjakan paling akhir.
 - **Provinsi UI** sementara Jawa Barat sampai dicek pemilik data.
+- **Ambang skor RAG (`rag.ambang_skor` = 0,55) hanya pengaman kasar.** Diukur pada 15 Okt 2026 dengan `gemini-embedding-001`: skor tertinggi pertanyaan dalam cakupan 0,75 sampai 0,81, sedangkan pertanyaan di luar cakupan 0,65 sampai 0,76. Rentangnya tumpang tindih, jadi ambang tidak memisahkan keduanya dan 0,55 hampir tidak pernah menolak. Pemisahan dalam/luar cakupan bergantung pada **instruksi LLM** (`cukup_informasi=false`) dan pada **sitasi sumber** yang selalu diambil dari metadata chunk, bukan dari ambang skor. Nilai 0,55 sengaja tidak disetel dengan golden set agar tidak overfit pada 23 pertanyaan.
 - **Deploy** dengan Let's Encrypt di VPS belum diuji; satu worker.
+
+### 18.3 Perubahan v1.2 (15 Oktober 2026)
+
+Hanya lapisan LLM, RAG, `/query`, `/explore`, dan endpoint baru. Logika keputusan (gate, kategori, strategi) tidak diubah.
+
+- **Konfigurasi model lewat env**: `LLM_MODEL`, `EMBED_MODEL`, `LLM_MODEL_FALLBACK` (dipisah koma). Kosong berarti nilai bawaan `config/app.yaml`. `EMBED_MODEL` tetap terkunci bersama dimensi 768. Skrip baru `scripts.list_models` mencetak model yang mendukung `generateContent` dan `embedContent`.
+- **Rantai LLM**: model utama, ulangi sekali bila 503, model cadangan (404, 429, 503 setelah ulangan, atau timeout), lalu teks template. Error lain (kredensial, 400) tidak dicoba ke model lain. `llm.timeout_detik` 20 menjadi 10. Respons API tidak 5xx saat LLM gagal.
+- **Prompt RAG** diperlengkap (semua kategori, kondisi, dan angka relevan; tolak rekomendasi pribadi dan konteks yang tidak memuat jawaban). Versi prompt (`VERSI_PROMPT_RAG`) ikut kunci cache. Aturan umum "jangan menyebut persentase" tidak lagi melarang angka kuota yang tertulis di konteks pada prompt RAG; pagar angka di luar konteks tetap berlaku. `rag.top_k` tetap 4 (uji 6 tidak lebih baik); `rag.ambang_skor` tetap 0,55.
+- **Endpoint baru**: `GET /riasec/questions` (publik) dan `POST /riasec/submit` (token). Tabel baru `riasec_hasil` (migrasi 0002, CASCADE dari `sessions`); jawaban mentah tidak disimpan. Config baru `riasec:`; variabel `Settings.riasec_dir`.
+- **`/explore`**: field baru `minat_sumber`, `keyakinan_minat` per rekomendasi, `label_data`, `memakai_data_draf`, dan `penelusuran_katalog`. Semuanya penanda; skor dan urutan hanya berubah bila data draf dipakai (lihat §18.2).
+- **Pengalihan `/query` ke eksplorasi**: pertanyaan bertema minat atau pilihan jurusan (pola `query.pola_eksplorasi`) dijawab deterministik dengan arahan ke Eksplorasi Jurusan — tanpa embedding, tanpa LLM, tanpa daftar sumber. Dicek setelah `pola_keputusan`, jadi pertanyaan aturan dan keputusan tidak terdampak.
+- **Data eksplorasi draf** di `data/draft/` (dibuat `scripts.buat_draf_eksplorasi`), terpisah dari CSV utama. Prioritas: data resmi, draf, klasifikasi awal.
+- **Sesi demo berumur panjang**: `sesi.ttl_demo_jam` (72 jam) hanya dipakai `scripts.siapkan_demo` saat membuat sesi persona langsung di basis data untuk rekaman demo; sesi publik tetap `sesi.ttl_jam`.
+- **`scripts.ingest_docs`**: dokumen yang berkasnya belum ada dilewati (`[LEWATI]`), gagal hanya bila tidak ada satu pun berkas.
+
+### 18.4 Uji ke API nyata (15 Oktober 2026)
+
+- **Narasi `/summary`** (persona Dimas, strategi SNBP dan SNBT): model utama normal menghasilkan narasi LLM yang lolos pagar (1,2 detik); model utama 404 lalu model cadangan juga narasi LLM (1,6 detik); semua model gagal menghasilkan narasi template dengan HTTP 200 (0,7 detik).
+- **`/query` saat LLM gagal**: pada run golden pertama 7 jawaban jatuh ke teks cadangan karena timeout dan 503 nyata, tanpa satu pun 5xx.
+
+### 18.5 Angka akhir golden RAG (15 Oktober 2026)
+
+Model `gemini-flash-lite-latest`, 23 pertanyaan (`data/seed/golden_set.csv`, tidak diubah), cache LLM dikosongkan, satu kali jalan setelah konfigurasi dibekukan. Berkas: `reports/golden_rag_20261015-095036.csv`.
+
+| Kelompok | Sebelum perubahan prompt | Angka akhir |
+|---|---|---|
+| Dalam cakupan (proksi otomatis) | 9 dari 13 (69,2 persen) | **11 dari 13 (84,6 persen)** |
+| Di luar cakupan (menolak dengan jujur) | 5 dari 6 | **6 dari 6** |
+| Keputusan dijawab mesin aturan | 4 dari 4 | **4 dari 4** |
+| Jatuh ke fallback | 0 | **0** |
+
+Gate 33 dari 33 dan persona 20 dari 20 tetap sesuai. Ini skor proksi (kecocokan sumber, halaman, dan angka kunci), **bukan klaim akurasi**; akurasi dinilai manusia lewat `nilai_manual` (pada berkas 095036 terisi 23 dari 23 "benar" oleh tim sendiri; run ulang 120118 sengaja dibiarkan kosong). Dua soal dalam cakupan masih gagal proksi: baris 5 (jawaban benar, tetapi halaman yang dikutip tidak memuat halaman rujukan golden) dan baris 14 (menyebut 30 persen untuk PTNBH tanpa 40 persen untuk BLU dan Satker). Hasil bervariasi antar-run karena LLM tidak deterministik; sebelum perubahan prompt, uji dengan model berbeda (`gemini-3.1-flash-lite`) hanya 5 dari 13 dengan 7 fallback. Run ulang 15 Okt 2026 (`reports/golden_rag_20261015-120118.csv`, cache dikosongkan) mendapat skor proksi yang sama dengan 14 dari 23 jawaban berubah redaksional.
 
 ---
 
