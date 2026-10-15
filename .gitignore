@@ -11,3 +11,4 @@ data/dokumen/*
 !data/dokumen/.gitkeep
 reports/
 deploy/certs/
+.kiro
