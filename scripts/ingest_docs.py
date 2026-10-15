@@ -4,6 +4,7 @@
     uv run python -m scripts.ingest_docs                   # semua dokumen terdaftar
     uv run python -m scripts.ingest_docs --dokumen snpmb-faq
 
+Dokumen yang berkasnya belum ada di data/dokumen/ DILEWATI (bukan error); gagal hanya bila tidak ada satu pun berkas.
 Prasyarat: dokumen_rag_metadata.csv sudah di-ingest (scripts.ingest) dan berkasnya diunduh manual ke
 data/dokumen/<dokumen_id>.pdf|.html. Butuh GEMINI_API_KEY (kecuali --dry-run). Idempoten: chunk yang
 tidak berubah tidak di-embed ulang.
@@ -50,6 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     engine = make_engine(args.database_url)
     klien = None if args.dry_run else buat_client(settings, config)
     gagal = 0
+    dilewati = 0
     with Session(engine) as db:
         terdaftar = list(db.execute(select(DokumenSumber.id).order_by(DokumenSumber.id)).scalars())
         target = args.dokumen or terdaftar
@@ -80,8 +82,11 @@ def main(argv: list[str] | None = None) -> int:
                         f"{h.tidak_berubah} tidak berubah, {h.dihapus} dihapus) dari {h.berkas}, "
                         f"{h.panggilan_embed} panggilan embedding"
                     )
+            except BerkasTidakAda as exc:
+                # Dokumen opsional (mis. snpmb-faq, halaman web): berkas belum diunduh = dilewati, bukan error.
+                dilewati += 1
+                print(f"[LEWATI] {dokumen_id}: {exc}")
             except (
-                BerkasTidakAda,
                 TanpaTeks,
                 DokumenTidakTerdaftar,
                 ChunkTerlaluBesar,
@@ -95,6 +100,14 @@ def main(argv: list[str] | None = None) -> int:
                     f"[GAGAL] {dokumen_id}: embedding gagal ({type(exc).__name__}). Coba lagi nanti."
                 )
     engine.dispose()
+    if dilewati and dilewati == len(target):
+        print(
+            f"[GAGAL] tidak ada satu pun berkas dokumen ditemukan di {args.dir}.",
+            file=sys.stderr,
+        )
+        return 1
+    if dilewati:
+        print(f"{dilewati} dokumen dilewati karena berkasnya belum ada (opsional).")
     return 1 if gagal else 0
 
 
