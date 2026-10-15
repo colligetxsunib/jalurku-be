@@ -30,9 +30,12 @@ from app.domain.match import (
 )
 from app.domain.ringkasan import rata_mapel
 from app.services.analisis import analisis_banyak
+from app.services.draf_eksplorasi import LABEL_DRAF, DrafEksplorasi
 from app.services.refdata import RefData
+from app.services.riasec import sumber_minat
 
 SUMBER_DATA = "data"
+SUMBER_DRAF = "draf"  # data/draft/*.csv: draf, belum terverifikasi
 SUMBER_AWAL = "klasifikasi_awal"
 SUMBER_TABEL_PROFESI = "tabel_profesi"
 SUMBER_UMUM = "contoh_umum"
@@ -51,28 +54,58 @@ def _per_rumpun(db: Session) -> dict[str, list[tuple[m.Prodi, m.Ptn]]]:
     return per_rumpun
 
 
+def _vektor_tag(bertag: Sequence[Sequence[str]]) -> dict[str, float]:
+    hitung = Counter(t for tag in bertag for t in set(tag))
+    return {d: hitung[d] / len(bertag) for d in sorted(hitung)}
+
+
 def _profil_minat(
-    daftar: Sequence[tuple[m.Prodi, m.Ptn]], dimensi: Sequence[str], awal: Mapping[str, float]
+    daftar: Sequence[tuple[m.Prodi, m.Ptn]],
+    dimensi: Sequence[str],
+    awal: Mapping[str, float],
+    draf: DrafEksplorasi | None = None,
 ) -> tuple[dict[str, float], str] | None:
-    """Rata-rata vektor tag_minat prodi (bobot 1 per tag) bila ada, selain itu klasifikasi awal."""
+    """Rata-rata vektor tag_minat prodi (bobot 1 per tag): data resmi, lalu draf, lalu klasifikasi awal."""
     kunci = set(dimensi)
-    bertag = [[t for t in (p.tag_minat or []) if t in kunci] for p, _ in daftar]
-    bertag = [t for t in bertag if t]
+    bertag = [t for t in ([x for x in (p.tag_minat or []) if x in kunci] for p, _ in daftar) if t]
     if bertag:
-        hitung = Counter(t for tag in bertag for t in set(tag))
-        return {d: hitung[d] / len(bertag) for d in sorted(hitung)}, SUMBER_DATA
+        return _vektor_tag(bertag), SUMBER_DATA
+    if draf is not None:
+        dtag = [
+            t
+            for t in ([x for x in draf.tag_minat.get(p.id, []) if x in kunci] for p, _ in daftar)
+            if t
+        ]
+        if dtag:
+            return _vektor_tag(dtag), SUMBER_DRAF
     return (dict(awal), SUMBER_AWAL) if awal else None
 
 
 def _profil_mapel(
-    daftar: Sequence[tuple[m.Prodi, m.Ptn]], awal: Mapping[str, float]
+    daftar: Sequence[tuple[m.Prodi, m.Ptn]],
+    awal: Mapping[str, float],
+    draf: DrafEksplorasi | None = None,
 ) -> tuple[dict[str, float], str] | None:
-    """Bobot mapel = frekuensi relatif di prodi.mapel_penentu bila ada, selain itu klasifikasi awal."""
+    """Bobot mapel = frekuensi relatif mapel_penentu: data resmi, lalu draf, lalu klasifikasi awal."""
     hitung = Counter(mp for p, _ in daftar for mp in set(p.mapel_penentu or []))
     if hitung:
         puncak = max(hitung.values())
         return {mp: hitung[mp] / puncak for mp in sorted(hitung)}, SUMBER_DATA
+    if draf is not None:
+        hitung = Counter(mp for p, _ in daftar for mp in set(draf.mapel.get(p.id, [])))
+        if hitung:
+            puncak = max(hitung.values())
+            return {mp: hitung[mp] / puncak for mp in sorted(hitung)}, SUMBER_DRAF
     return (dict(awal), SUMBER_AWAL) if awal else None
+
+
+def _ptn_ringkas(daftar: Sequence[tuple[m.Prodi, m.Ptn]], maks: int) -> list[dict[str, Any]]:
+    ptn: dict[str, dict[str, Any]] = {}
+    for p, t in daftar[:maks]:
+        ptn.setdefault(t.id, {"id": t.id, "nama": t.nama, "provinsi": t.provinsi, "prodi_ids": []})[
+            "prodi_ids"
+        ].append(p.id)
+    return list(ptn.values())
 
 
 def _profesi(db: Session) -> dict[str, list[str]]:
@@ -115,6 +148,7 @@ def jelajahi(
     *,
     top_n: int,
     jalur: str | None,
+    draf: DrafEksplorasi | None = None,
 ) -> dict[str, Any]:
     cfg = config.explore
     dimensi = config.minat.dimensi
@@ -133,8 +167,8 @@ def jelajahi(
     for rumpun in sorted(per_rumpun):
         daftar = per_rumpun[rumpun]
         awal = cfg.rumpun.get(rumpun)
-        minat_r = _profil_minat(daftar, dimensi, awal.minat if awal else {})
-        mapel_r = _profil_mapel(daftar, awal.mapel if awal else {})
+        minat_r = _profil_minat(daftar, dimensi, awal.minat if awal else {}, draf)
+        mapel_r = _profil_mapel(daftar, awal.mapel if awal else {}, draf)
         if minat_r is None and mapel_r is None:
             continue  # tidak ada profil sama sekali: tidak bisa dinilai, tidak ditebak
 
@@ -149,14 +183,16 @@ def jelajahi(
 
         if rumpun in profesi_db:
             contoh, sumber_profesi = profesi_db[rumpun][: cfg.maks_profesi], SUMBER_TABEL_PROFESI
+        elif draf is not None and rumpun in draf.profesi:
+            contoh, sumber_profesi = draf.profesi[rumpun][: cfg.maks_profesi], SUMBER_DRAF
         else:
             contoh, sumber_profesi = (awal.profesi[: cfg.maks_profesi] if awal else []), SUMBER_UMUM
 
-        ptn: dict[str, dict[str, Any]] = {}
-        for p, t in daftar[: cfg.maks_prodi_per_rumpun]:
-            ptn.setdefault(
-                t.id, {"id": t.id, "nama": t.nama, "provinsi": t.provinsi, "prodi_ids": []}
-            )["prodi_ids"].append(p.id)
+        sumber_profil = {
+            "minat": minat_r[1] if minat_r else None,
+            "mapel": mapel_r[1] if mapel_r else None,
+            "profesi": sumber_profesi,
+        }
 
         kandidat.append(
             {
@@ -177,14 +213,11 @@ def jelajahi(
                 ),
                 "mapel_belum_diisi": nilai.kosong,
                 "contoh_profesi": contoh,
-                "sumber_profil": {
-                    "minat": minat_r[1] if minat_r else None,
-                    "mapel": mapel_r[1] if mapel_r else None,
-                    "profesi": sumber_profesi,
-                },
+                "sumber_profil": sumber_profil,
+                "label_data": LABEL_DRAF if SUMBER_DRAF in sumber_profil.values() else None,
                 "total_prodi": len(daftar),
                 "prodi_ids": [p.id for p, _ in daftar[: cfg.maks_prodi_per_rumpun]],
-                "ptn": list(ptn.values()),
+                "ptn": _ptn_ringkas(daftar, cfg.maks_prodi_per_rumpun),
                 "kelayakan": _kelayakan(db, ref, config, profil, jalur, daftar)
                 if jalur and ref is not None
                 else None,
@@ -194,6 +227,20 @@ def jelajahi(
     # Urut menurut skor yang DITAMPILKAN (2 desimal), lalu nama rumpun: skor sama selalu urut alfabet.
     kandidat.sort(key=lambda r: (-r["skor_kecocokan"], r["rumpun"]))
     rekomendasi = kandidat[:top_n]
+
+    # Fallback penelusuran katalog: rumpun yang tidak bisa diberi skor (tanpa profil, atau minat dan
+    # nilai belum diisi) tetap ditampilkan apa adanya, tanpa skor dan tanpa tebakan.
+    dinilai = {r["rumpun"] for r in kandidat}
+    penelusuran = [
+        {
+            "rumpun": rumpun,
+            "total_prodi": len(per_rumpun[rumpun]),
+            "prodi_ids": [p.id for p, _ in per_rumpun[rumpun][: cfg.maks_prodi_per_rumpun]],
+            "ptn": _ptn_ringkas(per_rumpun[rumpun], cfg.maks_prodi_per_rumpun),
+        }
+        for rumpun in sorted(per_rumpun)
+        if rumpun not in dinilai
+    ]
 
     data_kurang = []
     if not minat_ada:
@@ -213,6 +260,16 @@ def jelajahi(
             "Profil rumpun (minat, mapel relevan, contoh profesi) masih klasifikasi awal dan belum "
             "diverifikasi tim data."
         )
+    if any(SUMBER_DRAF in r["sumber_profil"].values() for r in rekomendasi):
+        catatan.append(
+            f"Sebagian profil rumpun (minat, mapel, atau contoh profesi) berasal dari data {LABEL_DRAF}. "
+            "Perlakukan sebagai gambaran awal, bukan data resmi."
+        )
+    if penelusuran:
+        catatan.append(
+            "Rumpun di penelusuran_katalog belum bisa diberi skor (profil rumpun atau data minat dan "
+            "nilai belum cukup), jadi hanya ditampilkan sebagai penelusuran katalog tanpa skor."
+        )
     if jalur is None and rekomendasi:
         catatan.append("Sertakan jalur (SNBP atau SNBT) untuk melihat kelayakan tiap rumpun.")
     if jalur and rekomendasi:
@@ -225,5 +282,7 @@ def jelajahi(
         "data_kurang": data_kurang,
         "jalur": jalur,
         "indikatif": True,
+        "memakai_data_draf": any(SUMBER_DRAF in r["sumber_profil"].values() for r in rekomendasi),
+        "penelusuran_katalog": penelusuran,
         "catatan": catatan,
     }

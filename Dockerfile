@@ -15,6 +15,7 @@ COPY alembic.ini ./
 COPY app ./app
 COPY config ./config
 COPY data/seed ./data/seed
+COPY data/draft ./data/draft
 COPY scripts ./scripts
 
 RUN useradd --system --uid 10001 --no-create-home appuser \

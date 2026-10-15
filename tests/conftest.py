@@ -90,6 +90,8 @@ def make_settings(**overrides) -> Settings:
         "cors_origins": "",
         "require_verified": False,
         "app_env": "dev",
+        # Tes memakai klasifikasi awal di config kecuali tes draf menyebut folder sendiri.
+        "draf_dir": str(ROOT / "data" / "draft-tidak-dipakai-tes"),
     }
     base.update(overrides)
     return Settings(_env_file=None, **base)

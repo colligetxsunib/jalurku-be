@@ -42,5 +42,11 @@ def explore(
         )
     ref = request.app.state.refdata.get(db) if body.jalur else None
     return eksplorasi.jelajahi(
-        db, ref, config, profile.baca_profil(db, sesi.id), top_n=top_n, jalur=body.jalur
+        db,
+        ref,
+        config,
+        profile.baca_profil(db, sesi.id),
+        top_n=top_n,
+        jalur=body.jalur,
+        draf=getattr(request.app.state, "draf", None),
     )
