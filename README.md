@@ -161,7 +161,7 @@ data/
 api-collection/  Postman Collection v2.1 + environment (dihasilkan scripts/build_api_collection.py)
 deploy/          docker compose produksi, nginx, skrip deploy dan sertifikat
 scripts/         CLI: ingest, ingest_docs, check_verified, run_golden_set, smoke_test, ...
-tests/           pytest (864 tes), golden_gate/, golden_rag/
+tests/           pytest (936 tes), golden_gate/, golden_rag/
 ```
 
 Aturan penting kode: `app/domain/` tidak boleh meng-import LLM, RAG, SQLAlchemy, atau FastAPI (dijaga tes). Hanya `app/llm/client.py` yang boleh meng-import SDK Google (dijaga tes).
@@ -512,7 +512,7 @@ Skrip ini melaporkan tabel kritis, katalog, status persona, status kasus golden 
 | `TEST_DATABASE_URL` | Database untuk pytest |
 | `GEMINI_API_KEY` | Kunci Google AI Studio. Kosong = fitur LLM memakai teks cadangan |
 | `LLM_MODEL` | Model generatif (menimpa `llm.model` di `app.yaml`). Cari nama valid dengan `scripts.list_models` |
-| `LLM_MODEL_FALLBACK` | Model cadangan, dipisah koma. Dicoba berurutan saat model utama 404 atau 429, sebelum jatuh ke teks template |
+| `LLM_MODEL_FALLBACK` | Model cadangan, dipisah koma. Dicoba berurutan saat model utama 404, 429, 503 (setelah satu ulangan), atau timeout, sebelum jatuh ke teks template |
 | `EMBED_MODEL` | Model embedding (menimpa `embedding.model`). Dikunci bersama dimensi 768: mengganti berarti re-embed semua chunk |
 | `ADMIN_KEY` | Kunci `X-Admin-Key`. Kosong = endpoint admin 404 |
 | `CORS_ORIGINS` | Origin frontend, pisahkan koma |
@@ -568,7 +568,7 @@ Saat `deploy.sh` jalan dengan `REQUIRE_VERIFIED=true` dan data belum bertanggal,
 
 ```bash
 docker compose up -d db
-uv run pytest            # 864 tes. Jalankan satu pytest saja pada satu waktu (database uji dipakai bersama). Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
+uv run pytest            # 936 tes. Jalankan satu pytest saja pada satu waktu (database uji dipakai bersama). Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
 ```
 
 Tidak ada tes yang memanggil Gemini asli: LLM diganti `FakeLLM` (`tests/fakes.py`).
@@ -581,7 +581,7 @@ uv run python -m scripts.run_golden_set --rag         # + RAG; butuh GEMINI_API_
 ```
 
 - **Gate**: `config/golden/gate.json`, 33 kasus yang mencakup ke-13 syarat, kasus tepi tahun lulus, batas kuota sekolah, Paket C, dan kombinasi gagal + `data_kurang`. Harapan ditulis dari pembacaan syarat resmi, bukan disalin dari keluaran mesin. Saat ini 33 dari 33 sesuai.
-- **RAG**: `data/seed/golden_set.csv` (23 pertanyaan: 13 dalam cakupan, 6 di luar cakupan, 4 keputusan). Kolom `halaman` diisi dari PDF di `data/dokumen/` dengan `uv run python -m scripts.isi_halaman_golden` (dry-run; `--tulis` menyimpan, `--timpa` menimpa isian lama, `--terima-perkiraan` ikut mengisi yang berstatus perkiraan). Hanya kecocokan kuat yang mengisi `halaman`; kecocokan lemah ditandai `perkiraan` dan yang tidak ketemu `tidak_ditemukan` di kolom `status_halaman` untuk dicek manusia. Status terakhir: 6 terisi, 10 perkiraan, 1 tidak ditemukan (baris 20). Skor otomatis hanyalah proksi: pertanyaan di luar cakupan lulus bila `yakin: false`; pertanyaan keputusan lulus bila dijawab `mesin_aturan`; pertanyaan dalam cakupan diperiksa dari kecocokan sumber, halaman, dan angka kunci. Akurasi jawaban sebenarnya dinilai manusia lewat kolom `nilai_manual` pada laporan CSV (`reports/golden_rag_*.csv`).
+- **RAG**: `data/seed/golden_set.csv` (23 pertanyaan: 13 dalam cakupan, 6 di luar cakupan, 4 keputusan). Lembar verifikasi halaman untuk 13 pertanyaan dalam cakupan ada di `reports/lembar_verifikasi.csv` (dokumen, halaman, kutipan pendek, status `ditemukan`/`perkiraan`/`tidak ditemukan`); kolom `halaman` di `golden_set.csv` sendiri **tidak** diisi otomatis dari lembar itu dan menunggu pemeriksaan manusia. Skor otomatis hanyalah proksi: pertanyaan di luar cakupan lulus bila `yakin: false`; pertanyaan keputusan lulus bila dijawab `mesin_aturan`; pertanyaan dalam cakupan diperiksa dari kecocokan sumber, halaman, dan angka kunci. Akurasi jawaban sebenarnya dinilai manusia lewat kolom `nilai_manual` pada laporan CSV (`reports/golden_rag_*.csv`). Run terakhir (15 Okt 2026, cache LLM dikosongkan): dalam cakupan **11 dari 13**, di luar cakupan 6 dari 6, keputusan 4 dari 4, fallback 0.
 - **Smoke test pasca-deploy**: `scripts/smoke_test.py` menjalankan alur persona via HTTP, termasuk uji penolakan admin, `/docs` mati di produksi, dan header keamanan nginx.
 
 ---
@@ -643,19 +643,23 @@ Status per 14 Oktober 2026. Item bercentang sudah selesai.
 
 - [ ] **Tanggal verifikasi `prodi.csv` dan `dokumen_rag_metadata.csv`** masih kosong. Isi setelah dicocokkan dengan sumber resmi (tidak boleh diisi otomatis), lalu ingest ulang dan jalankan `scripts.check_verified`.
 - [ ] **Verifikasi persona Rani** oleh pemilik data: set `hasil_terverifikasi: true` beserta `terakhir_diverifikasi` dan `diverifikasi_oleh` di `config/personas/rani.json`. Persona Dimas, Budi, Sinta dan `config/golden/gate.json` tetap `false` (keputusan pemilik data).
-- [ ] **Cek halaman golden RAG**: 10 baris berstatus `perkiraan` dan 1 `tidak_ditemukan` (baris 20) di kolom `status_halaman`. Cek manual lalu isi `halaman`, atau jalankan `scripts.isi_halaman_golden --terima-perkiraan --tulis` bila perkiraannya sudah dipastikan benar.
+- [ ] **Cek halaman golden RAG**: 13 pertanyaan dalam cakupan sudah disiapkan lembar kerjanya di `reports/lembar_verifikasi.csv` (dokumen, halaman, kutipan pendek, status). Hasil pencarian otomatis: 6 `ditemukan`, 7 `perkiraan`, 0 `tidak ditemukan`. Periksa kutipan tiap baris, lalu isi kolom `halaman` di `data/seed/golden_set.csv` secara manual (jangan otomatis).
 - [ ] **PDF `snpmb-faq`** (halaman web) belum ada di `data/dokumen/`.
 - [ ] **Cek provinsi UI** di daftar resmi SNPMB. Provinsi tetap Jawa Barat sampai pemilik data memberi kabar. Bila berubah (mis. DKI Jakarta), ganti `provinsi` pada keempat persona.
-- [ ] **Data eksplorasi** (dikerjakan paling akhir, tidak memblokir pekerjaan lain): `tag_minat` dan `mapel_penentu` per prodi, serta `profesi.csv` (kolom `rumpun`, `nama`, opsional `id` dan `deskripsi`). Bila membuat draf, simpan terpisah dan beri label belum terverifikasi. Sementara itu `/explore` memakai klasifikasi awal di `config/app.yaml`. Putuskan juga himpunan dimensi minat final (saat ini RIASEC sebagai placeholder) bersama frontend.
+- [ ] **Data eksplorasi resmi**: `tag_minat` dan `mapel_penentu` per prodi, serta `profesi.csv`. Saat ini `/explore` memakai **draf** di `data/draft/` (dibuat `scripts.buat_draf_eksplorasi`, berlabel "draf, belum terverifikasi", tanpa tanggal verifikasi). Verifikasi dan pindahkan ke CSV utama; data resmi otomatis didahulukan.
 - [ ] **Konfirmasi hukum** soal data anak (UU PDP) dan persetujuan orang tua/wali. Belum dikerjakan; **syarat sebelum peluncuran nyata**.
-- [ ] **Kalibrasi sungguhan** dan **data keketatan** SNBP/PTN lain bila ingin demo melampaui UI.
 
 ### B. Backend dan AI
 
-- [ ] **Isi `GEMINI_API_KEY`**, cek model dan kuota di AI Studio, lalu `uv run python -m scripts.check_gemini`. Isi `LLM_MODEL`, `LLM_MODEL_FALLBACK`, dan `EMBED_MODEL` di `.env` (nama dari `scripts.list_models`).
-- [ ] **Ingest dokumen RAG sungguhan** (`scripts.ingest_docs`) dan **uji kualitas pencarian**: kalibrasi `rag.ambang_skor` (awal 0,55) dan `top_k` dari hasil nyata.
-- [ ] **Jalankan `scripts.run_golden_set --rag`**, isi `nilai_manual`, dan laporkan metrik apa adanya di pitch.
-- [ ] **Uji ketersediaan** `/query` dan narasi saat kuota Gemini habis (fallback sudah ada, tetapi belum pernah dicoba dengan error nyata).
+Status dicek 15 Oktober 2026 dengan panggilan Gemini nyata.
+
+- [x] **`GEMINI_API_KEY`, model, dan kuota**: kunci dikonfirmasi pemilik. `scripts.check_gemini` lulus untuk embedding (`gemini-embedding-001`, 768 dimensi), model utama, dan model cadangan.
+- [x] **Model generatif dan rantai cadangan** (15 Okt 2026): `LLM_MODEL=gemini-flash-lite-latest`, `LLM_MODEL_FALLBACK=gemini-3.1-flash-lite`, `timeout_detik: 10`. Rantai: model utama, ulangi sekali bila 503, model cadangan, lalu teks template. Fallback menangani 404, 429, 503, dan timeout; error lain (kredensial, 400) langsung ke template. Respons API tidak pernah 5xx karena LLM gagal. Alasan: `gemini-3.1-flash-lite` terukur tidak stabil (1,5 sampai 17 detik, 503, 504), sedangkan `gemini-flash-lite-latest` 8 dari 8 berhasil dalam 1 sampai 2,5 detik. Nama `-latest` adalah alias yang bisa berpindah versi.
+- [x] **Ingest dokumen RAG sungguhan**: 4 dari 5 dokumen masuk (103 chunk). `snpmb-faq` sekarang opsional: bila berkasnya belum ada, ingest melewatinya (`[LEWATI]`) tanpa error.
+- [ ] **Ambang skor RAG** (`rag.ambang_skor` 0,55) **sengaja tidak disetel** dengan golden set agar tidak overfit. Skor pertanyaan dalam cakupan (0,75 sampai 0,81) tumpang tindih dengan di luar cakupan (0,65 sampai 0,76), jadi ambang bukan pemisah. Pemisahan bergantung pada instruksi LLM dan sitasi (PRD bagian 18).
+- [x] **Golden RAG angka akhir** (`scripts.run_golden_set --rag`, 15 Okt 2026, 23 pertanyaan, cache dikosongkan, file `reports/golden_rag_20261015-095036.csv`): dalam cakupan **11 dari 13** lulus proksi otomatis (84,6 persen), di luar cakupan 6 dari 6, keputusan mesin aturan 4 dari 4, fallback 0. Sebelum perubahan prompt: 9 dari 13, 5 dari 6, 4 dari 4. Ini skor proksi, **bukan akurasi**. Dua yang masih gagal: baris 5 (jawaban benar, tetapi halaman sumber yang dikutip tidak memuat halaman rujukan golden) dan baris 14 (menyebut 30 persen untuk PTNBH tanpa 40 persen untuk BLU dan Satker). Hasil bervariasi antar-run karena LLM tidak deterministik. Run ulang hari yang sama (`reports/golden_rag_20261015-120118.csv`) mendapat skor proksi yang sama (11/13, 6/6, 4/4, 0 fallback); 14 dari 23 jawaban berubah redaksionalnya, status lulus tiap baris tidak berubah.
+- [ ] **Isi `nilai_manual`** di `reports/golden_rag_*.csv` (akurasi jawaban dinilai manusia) dan laporkan metrik apa adanya di pitch. Skor proksi bukan akurasi.
+- [x] **Uji ketersediaan terhadap API nyata**: `/query` (7 jawaban jatuh ke template saat timeout dan 503 nyata, tanpa 5xx), dan narasi `/summary` (utama normal: narasi LLM; utama 404 lalu cadangan: narasi LLM; semua model gagal: narasi template, HTTP 200). Respons 429 nyata belum teramati sebagai respons API.
 - [ ] **Uji kualitas kategori** secara mundur (backtest) dengan data tahun lalu bila tersedia. Sampai saat itu kategori hanya boleh dikomunikasikan sebagai heuristik.
 
 ### C. Deploy dan operasional
