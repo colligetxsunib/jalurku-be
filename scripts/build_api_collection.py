@@ -376,7 +376,15 @@ R_RINGKAS_ID = Req(
     kunci=("pilihan_akhir", "narasi"),
 )
 
-_KUNCI_QUERY = ("jawaban", "sumber", "yakin", "fallback", "mode", "jenis_jawaban")
+_KUNCI_QUERY = (
+    "jawaban",
+    "sumber",
+    "dokumen_terkait",
+    "yakin",
+    "fallback",
+    "mode",
+    "jenis_jawaban",
+)
 R_Q_TANYA = Req(
     "Tanya dokumen resmi (RAG)",
     "POST",

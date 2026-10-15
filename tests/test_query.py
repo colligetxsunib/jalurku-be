@@ -20,6 +20,7 @@ from app.ingest.service import ingest, ingest_direktori
 from app.llm.client import GeminiClient
 from app.llm.errors import LLMGagal, LLMKuotaHabis
 from app.llm.fallback_texts import (
+    TEKS_ALIH_EKSPLORASI,
     TEKS_JELASKAN_PENGANTAR,
     TEKS_KEPUTUSAN_TANPA_KONTEKS,
     TEKS_LAYANAN_GAGAL,
@@ -29,7 +30,7 @@ from app.llm.prompts import SISTEM_JELASKAN, SISTEM_RAG, JawabanRAG
 from app.main import create_app
 from tests.conftest import make_settings
 from tests.fakes import FakeLLM
-from tests.helpers import SEED_DIR, analyze, masuk, muat_persona
+from tests.helpers import SEED_DIR, analyze, masuk, muat_persona, persona
 
 pytestmark = pytest.mark.db
 
@@ -37,6 +38,7 @@ IK = "ui-ilmu-komputer"
 KUNCI_RESPONS = {
     "jawaban",
     "sumber",
+    "dokumen_terkait",
     "yakin",
     "data_dibutuhkan",
     "saran_pertanyaan",
@@ -313,10 +315,12 @@ def test_di_bawah_ambang_yakin_false_tanpa_memanggil_llm(bangun):
     )
     assert fake.panggilan_generate == 0  # hemat kuota & cegah halusinasi
     assert fake.panggilan_embed == 1
-    assert d["sumber"] and all(
-        s["url"].startswith("https://") for s in d["sumber"]
-    )  # tautan sumber terkait
-    assert all(s["halaman"] is None for s in d["sumber"])
+    assert d["sumber"] == []  # tidak yakin: tidak ada sumber pendukung
+    assert d["dokumen_terkait"] and all(
+        s["url"].startswith("https://") for s in d["dokumen_terkait"]
+    )
+    assert all(s["halaman"] is None for s in d["dokumen_terkait"])
+    assert any("bukan jawaban" in c and "2026" in c for c in d["catatan"])
 
 
 def test_tanpa_chunk_sama_sekali_arahkan_ke_sumber_resmi(bangun, clean_db):
@@ -327,9 +331,10 @@ def test_tanpa_chunk_sama_sekali_arahkan_ke_sumber_resmi(bangun, clean_db):
     h = muat_persona(c, "rani")
     d = ok(tanya(c, h, Q_PILIHAN))
     assert d["yakin"] is False and fake.panggilan_generate == 0
-    judul = {s["judul"] for s in d["sumber"]}
+    judul = {s["judul"] for s in d["dokumen_terkait"]}
+    assert d["sumber"] == []
     assert (
-        any("SNPMB" in j for j in judul) and len(d["sumber"]) <= 3
+        any("SNPMB" in j for j in judul) and len(d["dokumen_terkait"]) <= 3
     )  # hanya dokumen berjenis resmi
 
 
@@ -339,7 +344,7 @@ def test_embedding_gagal_fallback_bukan_5xx(bangun):
     r = tanya(c, h, Q_PILIHAN)
     d = ok(r)
     assert d["yakin"] is False and d["fallback"] is True and d["jawaban"] == TEKS_LAYANAN_GAGAL
-    assert fake.panggilan_generate == 0 and d["sumber"]
+    assert fake.panggilan_generate == 0 and d["sumber"] == [] and d["dokumen_terkait"]
 
 
 def test_llm_generate_gagal_fallback_dengan_tautan_sumber(bangun):
@@ -456,6 +461,11 @@ def test_keluaran_llm_bukan_json_dianggap_gagal(bangun):
     assert d["yakin"] is False and d["fallback"] is True
 
 
+def test_yakin_true_tetap_membawa_sumber_dan_dokumen_terkait_kosong(bangun):
+    c, _ = bangun()
+    d = ok(tanya(c, muat_persona(c, "rani"), Q_PILIHAN))
+    assert d["yakin"] is True and d["sumber"] and d["dokumen_terkait"] == []
+    assert not any("bukan jawaban" in x for x in d["catatan"])
 def test_llm_menyatakan_konteks_tidak_cukup(bangun):
     c, fake = bangun(
         FakeLLM(peta_embed=PETA, balasan=jawab_rag("Tidak ada di dokumen.", cukup=False))
@@ -463,7 +473,21 @@ def test_llm_menyatakan_konteks_tidak_cukup(bangun):
     h = muat_persona(c, "rani")
     d = ok(tanya(c, h, Q_PILIHAN))
     assert d["yakin"] is False and d["jawaban"] == TEKS_TIDAK_YAKIN and d["fallback"] is False
-    assert d["sumber"] and fake.panggilan_generate == 1
+    assert d["sumber"] == [] and d["dokumen_terkait"] and fake.panggilan_generate == 1
+
+
+def test_jawaban_daftar_bernomor_tidak_ditolak_karena_nomor_urut(bangun):
+    jawaban = "Ketentuan SNBP 2026: 7. Punya akun SNPMB. 8. Memilih 2 program studi."
+    c, _ = bangun(FakeLLM(peta_embed=PETA, balasan=jawab_rag(jawaban)))
+    d = ok(tanya(c, muat_persona(c, "rani"), Q_PILIHAN))
+    assert d["yakin"] is True and d["jawaban"] == jawaban and d["sumber"]
+
+
+def test_angka_karangan_tetap_ditolak_walau_ada_daftar_bernomor(bangun):
+    jawaban = "Ketentuan SNBP 2026: 7. Punya akun SNPMB. 8. Membayar 750 ribu."
+    c, _ = bangun(FakeLLM(peta_embed=PETA, balasan=jawab_rag(jawaban)))
+    d = ok(tanya(c, muat_persona(c, "rani"), Q_PILIHAN))
+    assert d["yakin"] is False and d["jawaban"] == TEKS_TIDAK_YAKIN
 
 
 def test_angka_di_luar_konteks_ditolak_sebagai_berisiko_halusinasi(bangun):
@@ -629,6 +653,26 @@ def test_jelaskan_memakai_fakta_mesin_aturan(bangun):
     assert fakta["penilaian"]["pita"]["rasio"] == hasil["penilaian"]["pita"]["rasio"]
     assert fakta["gate"]["status"] == "lolos" and fakta["prodi"]["nama"] == "Ilmu Komputer"
     assert d["sumber"] and all(s["halaman"] is None for s in d["sumber"])
+
+
+def test_prompt_jelaskan_tidak_memuat_data_profil_mentah(bangun):
+    """Minimisasi data ke Gemini: hanya fakta hasil mesin aturan, bukan isi profil siswa."""
+    c, fake = bangun()
+    h = muat_persona(c, "rani")
+    fake.balasan = jelaskan_dengan(ok_analisis(c, h))
+    ok(tanya(c, h, "Kenapa hasilnya begitu?", "jelaskan", prodi_id=IK, jalur="SNBT"))
+    prompt = (fake.prompt_terakhir or "") + (fake.system_terakhir or "")
+    profil = persona("rani")["profil"]
+    for terlarang in (
+        "nilai_rapor",
+        "semester_1",
+        "peringkat_sekolah",
+        "jumlah_siswa_angkatan",
+        "alumni_info",
+        profil["provinsi"],
+        "jenjang_sekolah",
+    ):
+        assert terlarang not in prompt, terlarang
 
 
 def test_jelaskan_hasil_whatif_memakai_angka_yang_sama_dengan_analyze(bangun, clean_db):

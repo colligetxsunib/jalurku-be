@@ -19,6 +19,16 @@ TEKS_LAYANAN_GAGAL = (
 TEKS_JELASKAN_PENGANTAR = (
     "Penjelasan otomatis sedang tidak tersedia. Berikut hasil dari mesin aturan: "
 )
+
+
+def catatan_dokumen_terkait(tahun_siklus: int) -> str:
+    """Peringatan wajib bila `yakin` false tetapi dokumen terkait ditampilkan."""
+    return (
+        f"Dokumen terkait di bawah hanya bahan bacaan (siklus {tahun_siklus}), bukan jawaban atas "
+        "pertanyaanmu. Ketentuan dan jadwal siklus lain bisa berbeda."
+    )
+
+
 TEKS_KEPUTUSAN_TANPA_KONTEKS = (
     "Keputusan syarat dan kategori ditentukan mesin aturan di aplikasi, bukan oleh AI. "
     "Pilih prodi dan jalur yang ingin dicek lewat fitur analisis agar aku bisa merujuk hasilnya."

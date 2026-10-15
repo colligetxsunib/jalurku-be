@@ -28,6 +28,7 @@ from app.llm.fallback_texts import (
     TEKS_KEPUTUSAN_TANPA_KONTEKS,
     TEKS_LAYANAN_GAGAL,
     TEKS_TIDAK_YAKIN,
+    catatan_dokumen_terkait,
     penjelasan_dari_hasil,
 )
 from app.llm.guard import angka_tidak_dikenal, keluaran_aman
@@ -35,6 +36,7 @@ from app.llm.pii import normalisasi_pertanyaan, saring_pii
 from app.llm.prompts import (
     SISTEM_JELASKAN,
     SISTEM_RAG,
+    VERSI_PROMPT_RAG,
     ChunkKonteks,
     JawabanRAG,
     prompt_jelaskan,
@@ -73,10 +75,14 @@ def _respons(
     saran: Sequence[str] = (),
     fallback: bool = False,
     catatan: Sequence[str] = (),
+    dokumen_terkait: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
+    """`sumber` hanya untuk jawaban yang didukung dokumen/data (yakin true). Saat yakin false, dokumen
+    yang topiknya mirip masuk `dokumen_terkait` (bahan bacaan, bukan jawaban)."""
     return {
         "jawaban": jawaban,
         "sumber": [dict(s) for s in sumber],
+        "dokumen_terkait": [dict(s) for s in dokumen_terkait],
         "yakin": yakin,
         "data_dibutuhkan": [dict(d) for d in data_dibutuhkan],
         "saran_pertanyaan": list(saran),
@@ -325,12 +331,17 @@ def _rag(
     def balas(
         jawaban: str, *, yakin: bool, sumber, saran=(), fallback=False, jenis="rag"
     ) -> dict[str, Any]:
+        # Tidak yakin = tidak ada jawaban yang didukung dokumen: daftar dokumen dipindah ke
+        # `dokumen_terkait` dan diberi catatan, supaya tidak terbaca sebagai sumber jawaban.
+        tahun = refdata.get(db).tahun_siklus
         return _respons(
             jawaban,
             jenis=jenis,
             mode="tanya",
             yakin=yakin,
-            sumber=sumber,
+            sumber=sumber if yakin else (),
+            dokumen_terkait=() if yakin else sumber,
+            catatan=[catatan_dokumen_terkait(tahun)] if (not yakin and sumber) else (),
             data_dibutuhkan=data_dibutuhkan,
             saran=saran or _saran(config, q),
             fallback=fallback,
@@ -365,6 +376,7 @@ def _rag(
         kunci_cache={
             "q": normalisasi_pertanyaan(q),
             "chunks": [[c.chunk_id, _hash_teks(c.teks)] for c in konteks],
+            "prompt": VERSI_PROMPT_RAG,
         },
         json_schema=JawabanRAG,
     )
@@ -384,7 +396,9 @@ def _rag(
     if not jawab.cukup_informasi or not jawab.jawaban.strip():
         return balas(TEKS_TIDAK_YAKIN, yakin=False, sumber=sumber, jenis="tidak_yakin"), ids
     asing = angka_tidak_dikenal(
-        jawab.jawaban, {"konteks": [c.teks for c in konteks], "pertanyaan": q}
+        jawab.jawaban,
+        {"konteks": [c.teks for c in konteks], "pertanyaan": q},
+        abaikan_penomoran=True,  # nomor urut daftar bukan klaim angka; angka lain tetap diperiksa
     )
     if asing:  # angka yang tidak ada di dokumen = berisiko halusinasi
         log.warning("jawaban LLM ditolak: angka di luar konteks")

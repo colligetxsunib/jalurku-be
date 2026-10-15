@@ -17,9 +17,28 @@ def _angka_dalam(teks: str) -> set[str]:
     return {a.replace(",", ".") for a in _ANGKA.findall(teks)}
 
 
-def angka_tidak_dikenal(teks: str, fakta: Mapping[str, Any]) -> list[str]:
-    """Angka di `teks` yang tidak muncul di `fakta` (dibandingkan sebagai token angka)."""
+# Penanda butir daftar bernomor ("8. Membayar ..."): 1-2 digit di awal teks atau setelah akhir butir
+# sebelumnya (". ", "; ", ": ", ") "), diikuti titik/kurung dan huruf. Angka di tengah kalimat
+# ("usia 25. Peserta") dan tahun ("2026. Peserta") tidak ikut terhapus.
+_PENOMORAN = re.compile(r"(?m)(?:^|(?<=[.;:)!?]\s))\d{1,2}[.)]\s+(?=[^\W\d_])")
+
+
+def tanpa_penomoran(teks: str) -> str:
+    """Buang penanda butir daftar bernomor supaya nomor urut tidak dianggap angka fakta."""
+    return _PENOMORAN.sub("", teks)
+
+
+def angka_tidak_dikenal(
+    teks: str, fakta: Mapping[str, Any], *, abaikan_penomoran: bool = False
+) -> list[str]:
+    """Angka di `teks` yang tidak muncul di `fakta` (dibandingkan sebagai token angka).
+
+    `abaikan_penomoran=True` untuk jawaban RAG yang memakai daftar bernomor: nomor urut ("8.") adalah
+    format, bukan klaim angka. Angka lain tetap wajib ada di fakta.
+    """
     ada = _angka_dalam(json.dumps(fakta, ensure_ascii=False, default=str))
+    if abaikan_penomoran:
+        teks = tanpa_penomoran(teks)
     # angka bulat dari float di fakta (mis. 0.83 -> '0.83'; 620.0 -> '620')
     for nilai in list(ada):
         if nilai.endswith(".0"):

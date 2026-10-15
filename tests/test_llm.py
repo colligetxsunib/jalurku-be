@@ -407,6 +407,46 @@ def test_list_models_mengelompokkan_berdasarkan_aksi():
     assert [m.name for m in emb] == ["models/e1"]
 
 
+def test_penjaga_angka_mengabaikan_nomor_urut_daftar_tetapi_tidak_angka_fakta():
+    from app.llm.guard import angka_tidak_dikenal, tanpa_penomoran
+
+    konteks = {"konteks": ["SNBP 2026 memiliki 2 pilihan. Batas usia 25 tahun per 1 Juli 2026."]}
+    daftar = "Ketentuan 2026: 1. Punya akun. 8. Membayar biaya. 10. Mengunggah berkas; 9. Lainnya."
+    assert angka_tidak_dikenal(daftar, konteks) == [
+        "10",
+        "8",
+        "9",
+    ]  # perilaku bawaan (narasi) tetap
+    assert angka_tidak_dikenal(daftar, konteks, abaikan_penomoran=True) == []
+    # angka di tengah kalimat, tahun, dan angka karangan tetap diperiksa
+    assert angka_tidak_dikenal(
+        "Biayanya 750. Peserta wajib hadir.", konteks, abaikan_penomoran=True
+    ) == ["750"]
+    assert angka_tidak_dikenal(
+        "Batas usia 30. Peserta wajib.", konteks, abaikan_penomoran=True
+    ) == ["30"]
+    assert angka_tidak_dikenal("Terbit 1999. Peserta wajib.", konteks, abaikan_penomoran=True) == [
+        "1999"
+    ]
+    assert (
+        angka_tidak_dikenal("7. Membayar biaya", konteks, abaikan_penomoran=True) == []
+    )  # awal teks
+    assert angka_tidak_dikenal("Ada 7. Membayar biaya", konteks, abaikan_penomoran=True) == ["7"]
+    assert tanpa_penomoran("a. 12. Bayar; 3) Hadir") == "a. Bayar; Hadir"
+
+
+def test_prompt_rag_meminta_kelengkapan_sitasi_tetap_dan_penolakan_bila_konteks_kurang():
+    from app.llm.prompts import VERSI_PROMPT_RAG
+
+    assert "SEMUA kategori" in SISTEM_RAG and "PTNBH" in SISTEM_RAG and "e-Rapor" in SISTEM_RAG
+    assert "cukup_informasi=false" in SISTEM_RAG and "HANYA berdasarkan KONTEKS" in SISTEM_RAG
+    assert "boleh dan harus kamu sebut" in SISTEM_RAG  # angka kuota di konteks tidak dilarang
+    assert '"kamu" secara konsisten' in SISTEM_RAG  # sapaan konsisten
+    p = prompt_rag("Berapa kuota?", [ChunkKonteks(1, "Paparan", 3, "Minimum 30%")])
+    assert "[1] Paparan, halaman 3" in p and "<konteks>" in p and "cukup_informasi=false" in p
+    assert VERSI_PROMPT_RAG  # ikut kunci cache agar perubahan prompt tidak memakai jawaban lama
+
+
 def test_l2_normalisasi_vektor_nol_ditolak():
     with pytest.raises(LLMGagal):
         l2_normalisasi([0.0, 0.0])
