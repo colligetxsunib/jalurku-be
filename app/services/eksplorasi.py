@@ -10,6 +10,7 @@ Tidak ada penulisan ke DB.
 
 from __future__ import annotations
 
+import uuid
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from typing import Any
@@ -148,9 +149,16 @@ def jelajahi(
     *,
     top_n: int,
     jalur: str | None,
+    sesi_id: uuid.UUID | None = None,
     draf: DrafEksplorasi | None = None,
 ) -> dict[str, Any]:
     cfg = config.explore
+    # Hanya PENANDA asal/keyakinan minat; tidak memengaruhi skor atau urutan rekomendasi.
+    asal_minat = (
+        sumber_minat(db, sesi_id, profil.get("minat"))
+        if sesi_id is not None
+        else {"sumber": "manual", "keyakinan": None, "alasan": []}
+    )
     dimensi = config.minat.dimensi
     minat_siswa = {
         d: float(v)
@@ -212,6 +220,7 @@ def jelajahi(
                     minat_diisi=minat_ada,
                 ),
                 "mapel_belum_diisi": nilai.kosong,
+                "keyakinan_minat": asal_minat["keyakinan"] if skor_minat is not None else None,
                 "contoh_profesi": contoh,
                 "sumber_profil": sumber_profil,
                 "label_data": LABEL_DRAF if SUMBER_DRAF in sumber_profil.values() else None,
@@ -270,6 +279,13 @@ def jelajahi(
             "Rumpun di penelusuran_katalog belum bisa diberi skor (profil rumpun atau data minat dan "
             "nilai belum cukup), jadi hanya ditampilkan sebagai penelusuran katalog tanpa skor."
         )
+    if asal_minat["keyakinan"] == "rendah" and rekomendasi:
+        catatan.append(
+            "Minat berasal dari tes minat dengan keyakinan rendah ("
+            + "; ".join(asal_minat["alasan"])
+            + "). Anggap sisi minat pada rekomendasi ini kurang dapat diandalkan; ulangi tes atau "
+            "lengkapi jawabanmu."
+        )
     if jalur is None and rekomendasi:
         catatan.append("Sertakan jalur (SNBP atau SNBT) untuk melihat kelayakan tiap rumpun.")
     if jalur and rekomendasi:
@@ -282,6 +298,7 @@ def jelajahi(
         "data_kurang": data_kurang,
         "jalur": jalur,
         "indikatif": True,
+        "minat_sumber": asal_minat,
         "memakai_data_draf": any(SUMBER_DRAF in r["sumber_profil"].values() for r in rekomendasi),
         "penelusuran_katalog": penelusuran,
         "catatan": catatan,

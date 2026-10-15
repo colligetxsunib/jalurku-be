@@ -48,5 +48,6 @@ def explore(
         profile.baca_profil(db, sesi.id),
         top_n=top_n,
         jalur=body.jalur,
+        sesi_id=sesi.id,
         draf=getattr(request.app.state, "draf", None),
     )
