@@ -49,6 +49,8 @@ Semua endpoint ada di bawah `/api/v1`. Selain `GET /health` dan `POST /session`,
 | `DELETE /session` | "Hapus data saya": hapus sesi dan semua data turunannya |
 | `GET /profile`, `PUT /profile` | Baca dan simpan profil (parsial), kembalikan `data_kurang` dan pertanyaannya |
 | `GET /catalog/ptn`, `/catalog/prodi`, `/catalog/prodi/{id}` | Telusuri PTN dan prodi (filter, paginasi, detail keketatan) |
+| `GET /riasec/questions` | Butir tes minat RIASEC (publik, tanpa token). Template tetap, tanpa LLM |
+| `POST /riasec/submit` | Skor minat dari jawaban (boleh parsial), Holland code, keyakinan; `simpan: true` memetakannya ke `profil.minat` |
 | `POST /explore` | Rekomendasi rumpun jurusan dari minat dan nilai (tanpa LLM) |
 | `POST /analyze` | Gate lalu penilaian per prodi per jalur, mendukung `override` (what-if) |
 | `POST /strategy` | Evaluasi komposisi pilihan per jalur, saran swap, what-if, simpan strategi |
@@ -161,7 +163,7 @@ data/
 api-collection/  Postman Collection v2.1 + environment (dihasilkan scripts/build_api_collection.py)
 deploy/          docker compose produksi, nginx, skrip deploy dan sertifikat
 scripts/         CLI: ingest, ingest_docs, check_verified, run_golden_set, smoke_test, ...
-tests/           pytest (936 tes), golden_gate/, golden_rag/
+tests/           pytest (978 tes), golden_gate/, golden_rag/
 ```
 
 Aturan penting kode: `app/domain/` tidak boleh meng-import LLM, RAG, SQLAlchemy, atau FastAPI (dijaga tes). Hanya `app/llm/client.py` yang boleh meng-import SDK Google (dijaga tes).
@@ -459,7 +461,28 @@ kecocokan = 0,5 x kemiripan_minat + 0,5 x kesesuaian_nilai
 - Tiap rekomendasi memuat `komponen`, `alasan` (template), `contoh_profesi`, `prodi_ids` dan daftar `ptn` pembukanya. Bila `jalur` diminta, ada juga `kelayakan` (ringkasan gate dan kategori dari mesin yang sama dengan `/analyze`).
 - Urutan: skor yang tampil (2 desimal) menurun, lalu nama rumpun.
 
-> Profil rumpun (vektor minat, mapel relevan, contoh profesi) saat ini **klasifikasi awal** di `config/app.yaml` dan ditandai belum diverifikasi di respons. Bila tim data mengisi `prodi.tag_minat`, `prodi.mapel_penentu`, atau tabel `profesi`, data itu otomatis menggantikannya.
+- `minat_sumber` menandai asal minat: `riasec` (dari tes, beserta `keyakinan` dan `alasan`), `manual` (diisi lewat `PUT /profile`, atau diubah setelah tes), atau `belum_diisi`. Tiap rekomendasi membawa `keyakinan_minat`; bila `rendah`, `catatan` memperingatkannya. Penanda ini **tidak mengubah skor atau urutan**.
+- `penelusuran_katalog` berisi rumpun yang tidak bisa diberi skor (minat dan nilai belum diisi, atau rumpun tanpa profil), ditampilkan apa adanya tanpa skor.
+
+> **Prioritas profil rumpun (minat, mapel relevan, contoh profesi):** data resmi (`prodi.tag_minat`, `prodi.mapel_penentu`, tabel `profesi`) lebih dulu, lalu **data draf** di `data/draft/` (ditandai `sumber_profil: draf`, `label_data: "draf, belum terverifikasi"`, `memakai_data_draf: true`), lalu klasifikasi awal di `config/app.yaml` (ditandai belum diverifikasi). Draf diturunkan mekanis dari klasifikasi rumpun, sama untuk semua prodi dalam satu rumpun, dan tidak dicampur ke CSV utama (lihat `data/draft/README.md`).
+
+### 8.3 Tes minat RIASEC
+
+Template tetap (bukan adaptif), skoring deterministik, tanpa LLM. **Bukan tes psikologi dan bukan diagnosis**: setiap hasil membawa pernyataan itu.
+
+- **Instrumen**: `data/riasec/instrumen_v1.json` berisi 36 butir **orisinal tim** (6 per dimensi,
+  berdasarkan definisi enam tipe Holland), skala 0..4 (`Sangat tidak suka` .. `Sangat suka`), versi
+  `riasec-id-v1`. Butir **belum divalidasi psikometrik** dan bukan tes psikologi; lembar review untuk
+  pemilik data dan guru BK ada di `reports/butir_riasec_review.csv` (berlabel "draf, belum
+  diverifikasi"). `instrumen_contoh.json` hanya fixture tes; berkas yang tidak valid membuat aplikasi
+  gagal start. Format lengkap di `data/riasec/README.md`; catatan kenapa butir PR #1 tidak dipakai di
+  `docs/riasec-integrasi.md`.
+- **Skor**: `skor_norm` dimensi = (rerata jawaban - skala.min) / (skala.maks - skala.min). Dimensi dengan butir 
+terjawab di bawah `riasec.min_terjawab_per_dimensi` tidak dihitung (bukan dianggap 0); ambang itu juga dikirim 
+sebagai `min_terjawab` pada `GET /riasec/questions` agar UI bisa memberitahu siswa. `holland_code` = huruf tiga 
+dimensi teratas (seri diurutkan menurut urutan dimensi).
+- **Cek kualitas** (angka di `riasec:` pada `config/app.yaml`): jawaban hampir seragam, profil datar, terlalu sedikit butir terjawab per dimensi. Bila terpicu, `keyakinan` menjadi `rendah` dengan `alasan_keyakinan`; hasil tidak ditolak.
+- **Penyimpanan**: `simpan: true` memetakan skor ke `profil.minat` (dimensi yang tidak dihitung dihapus) dan menyimpan ringkasan kualitas di `riasec_hasil`. **Jawaban mentah tidak pernah disimpan**; data tes ikut terhapus bersama sesi.
 
 ---
 
@@ -568,7 +591,7 @@ Saat `deploy.sh` jalan dengan `REQUIRE_VERIFIED=true` dan data belum bertanggal,
 
 ```bash
 docker compose up -d db
-uv run pytest            # 936 tes. Jalankan satu pytest saja pada satu waktu (database uji dipakai bersama). Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
+uv run pytest            # 978 tes. Jalankan satu pytest saja pada satu waktu (database uji dipakai bersama). Tes bertanda `db` dilewati bila PostgreSQL tidak tersedia
 ```
 
 Tidak ada tes yang memanggil Gemini asli: LLM diganti `FakeLLM` (`tests/fakes.py`).
@@ -647,6 +670,9 @@ Status per 14 Oktober 2026. Item bercentang sudah selesai.
 - [ ] **PDF `snpmb-faq`** (halaman web) belum ada di `data/dokumen/`.
 - [ ] **Cek provinsi UI** di daftar resmi SNPMB. Provinsi tetap Jawa Barat sampai pemilik data memberi kabar. Bila berubah (mis. DKI Jakarta), ganti `provinsi` pada keempat persona.
 - [ ] **Data eksplorasi resmi**: `tag_minat` dan `mapel_penentu` per prodi, serta `profesi.csv`. Saat ini `/explore` memakai **draf** di `data/draft/` (dibuat `scripts.buat_draf_eksplorasi`, berlabel "draf, belum terverifikasi", tanpa tanggal verifikasi). Verifikasi dan pindahkan ke CSV utama; data resmi otomatis didahulukan.
+- [ ] **Review butir RIASEC** oleh pemilik data dan guru BK: `data/riasec/instrumen_v1.json` sudah
+  berisi 36 butir orisinal tim (draf), lembar kerjanya di `reports/butir_riasec_review.csv`. Validasi
+  psikometrik belum dilakukan. Setelah butir diubah, jalankan `scripts.build_api_collection`.
 - [ ] **Konfirmasi hukum** soal data anak (UU PDP) dan persetujuan orang tua/wali. Belum dikerjakan; **syarat sebelum peluncuran nyata**.
 
 ### B. Backend dan AI
