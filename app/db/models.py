@@ -286,6 +286,31 @@ class QueryLog(Base):
     )
 
 
+class RiasecHasil(Base):
+    """Hasil tes minat terakhir per sesi. Hanya skor turunan: jawaban mentah TIDAK disimpan.
+
+    Ikut terhapus bersama sesi (CASCADE), jadi tidak pernah lebih lama dari TTL sesi.
+    """
+
+    __tablename__ = "riasec_hasil"
+
+    session_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("sessions.id", ondelete="CASCADE"), primary_key=True
+    )
+    versi_instrumen: Mapped[str] = mapped_column(String(64), nullable=False)
+    instrumen_contoh: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    skor_norm: Mapped[dict] = mapped_column(JSONB, nullable=False)  # {dimensi: 0..1}
+    keyakinan: Mapped[str] = mapped_column(String(8), nullable=False)  # sedang | rendah
+    alasan: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
+    terjawab: Mapped[int] = mapped_column(Integer, nullable=False)
+    total_item: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=_now(), nullable=False
+    )
+
+    __table_args__ = (CheckConstraint("keyakinan in ('sedang','rendah')", name="keyakinan_valid"),)
+
+
 class LlmCache(Base):
     """Cache respons LLM dan embedding pertanyaan. Kunci = hash input bebas PII."""
 

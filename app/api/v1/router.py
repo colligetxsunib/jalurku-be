@@ -10,6 +10,7 @@ from app.api.v1 import (
     health,
     profile,
     query,
+    riasec,
     session,
     strategy,
     summary,
@@ -20,6 +21,7 @@ api_router.include_router(health.router)
 api_router.include_router(session.router)
 api_router.include_router(profile.router)
 api_router.include_router(catalog.router)
+api_router.include_router(riasec.router)
 api_router.include_router(explore.router)
 api_router.include_router(analyze.router)
 api_router.include_router(strategy.router)

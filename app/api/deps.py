@@ -50,6 +50,16 @@ def batasi_buat_sesi(
     terapkan(limiter, f"buat:{ip}", config.rate_limit.buat_sesi_per_ip)
 
 
+def batasi_ip(
+    request: Request,
+    config: AppConfig = Depends(get_config),
+    limiter: SlidingWindowLimiter = Depends(get_limiter),
+) -> None:
+    """Batas per IP untuk endpoint publik tanpa token (kunci sama dengan jalur terautentikasi)."""
+    ip = ip_klien(request, config.rate_limit.proxy_tepercaya)
+    terapkan(limiter, f"ip:{ip}", config.rate_limit.per_ip)
+
+
 def sesi_saat_ini(
     request: Request,
     db: Session = Depends(get_db),
