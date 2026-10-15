@@ -1,0 +1,89 @@
+# JalurKu di belakang proxy host: hanya db + api, tanpa nginx/certbot di compose.
+#
+# HTTPS ditangani pemilik server (nginx di host + certbot yang sudah ada). Kontainer api HANYA
+# mendengar di 127.0.0.1 (lihat ports di bawah), jadi tidak bisa dijangkau dari luar server
+# kecuali lewat proxy host. Satu worker: limiter dan semaphore LLM di memori proses.
+#
+# Jalankan lewat deploy/deploy-hostproxy.sh, atau manual dari root repositori:
+#   cp deploy/.env.hostproxy.example deploy/.env.prod
+#   docker compose --project-directory deploy --env-file deploy/.env.prod \
+#     -f deploy/docker-compose.hostproxy.yml up -d --build
+name: jalurku-prod
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: jalurku
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?isi POSTGRES_PASSWORD di deploy/.env.prod}
+      POSTGRES_DB: jalurku
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jalurku -d jalurku"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [internal]
+    logging: *logging
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    image: jalurku-api:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: prod
+      DATABASE_URL: postgresql+psycopg://jalurku:${POSTGRES_PASSWORD}@db:5432/jalurku
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-}
+      LLM_MODEL_FALLBACK: ${LLM_MODEL_FALLBACK:-}
+      EMBED_MODEL: ${EMBED_MODEL:-}
+      ADMIN_KEY: ${ADMIN_KEY:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-24}
+      REQUIRE_VERIFIED: ${REQUIRE_VERIFIED:-false}
+      # Lihat TRUSTED_PROXIES di deploy/.env.hostproxy.example. Tanpa ini, semua
+      # permintaan terlihat dari satu IP (gateway Docker) dan berbagi jatah rate limit.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+    ports:
+      - "127.0.0.1:${APP_HOST_PORT:-8000}:8000"
+    volumes:
+      # PDF sumber RAG di host (dibuat manual, lihat README-hostproxy.md) agar bisa dibaca
+      # kontainer (pengguna: appuser uid 10001) dan ditulis bila endpoint admin unggah dipakai.
+      - ${DOKUMEN_DIR:-/srv/jalurku/dokumen}:/srv/data/dokumen
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s   # termasuk alembic upgrade head
+    networks: [internal]
+    logging: *logging
+
+networks:
+  internal:
+    ipam:
+      config:
+        # Subnet tetap supaya IP gateway (172.31.0.1) dan TRUSTED_PROXIES bisa diprediksi.
+        # 172.30.0.0/24 dipakai compose produksi (deploy/docker-compose.prod.yml): jangan sama.
+        # Bila bentrok di server, ganti di sini DAN di TRUSTED_PROXIES.
+        - subnet: 172.31.0.0/24
+
+volumes:
+  dbdata:
