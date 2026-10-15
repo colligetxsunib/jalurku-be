@@ -398,7 +398,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                  "pm.test(\"Respons memuat jawaban, sumber, dokumen_terkait, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"dokumen_terkait\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
                 ]
               }
             }
@@ -983,7 +983,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                  "pm.test(\"Respons memuat jawaban, sumber, dokumen_terkait, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"dokumen_terkait\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
                 ]
               }
             }
@@ -1734,6 +1734,147 @@
       ]
     },
     {
+      "name": "04b Tes minat RIASEC",
+      "description": "Template tetap, skoring deterministik tanpa LLM. Bukan tes psikologi dan bukan diagnosis. Jalankan setelah **Buat sesi**; hasil yang disimpan dipakai oleh folder Eksplorasi.",
+      "item": [
+        {
+          "name": "Ambil butir tes minat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat versi_instrumen, skala, dimensi, item, sumber\", function () { pm.expect(j).to.include.keys(\"versi_instrumen\", \"skala\", \"dimensi\", \"item\", \"sumber\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/riasec/questions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "riasec",
+                "questions"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Instrumen tes minat RIASEC: `versi_instrumen`, `skala`, `dimensi`, `item`, `sumber`. Publik (tanpa token). `instrumen_contoh: true` berarti berkas contoh sementara, bukan instrumen final."
+          },
+          "response": []
+        },
+        {
+          "name": "Hitung skor minat (pratinjau)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat holland_code, dimensi_teratas, skor_norm, keyakinan, tersimpan, pernyataan\", function () { pm.expect(j).to.include.keys(\"holland_code\", \"dimensi_teratas\", \"skor_norm\", \"keyakinan\", \"tersimpan\", \"pernyataan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/riasec/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "riasec",
+                "submit"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jawaban\": {\n    \"r1\": 0,\n    \"r2\": 1,\n    \"r3\": 2,\n    \"r4\": 3,\n    \"r5\": 4,\n    \"r6\": 0,\n    \"i1\": 2,\n    \"i2\": 3,\n    \"i3\": 4,\n    \"i4\": 0,\n    \"i5\": 1,\n    \"i6\": 2,\n    \"a1\": 4,\n    \"a2\": 0,\n    \"a3\": 1,\n    \"a4\": 2,\n    \"a5\": 3,\n    \"a6\": 4,\n    \"s1\": 1,\n    \"s2\": 2,\n    \"s3\": 3,\n    \"s4\": 4,\n    \"s5\": 0,\n    \"s6\": 1,\n    \"e1\": 3,\n    \"e2\": 4,\n    \"e3\": 0,\n    \"e4\": 1,\n    \"e5\": 2,\n    \"e6\": 3,\n    \"c1\": 0,\n    \"c2\": 1,\n    \"c3\": 2,\n    \"c4\": 3,\n    \"c5\": 4,\n    \"c6\": 0\n  },\n  \"simpan\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Skoring deterministik tanpa LLM. `simpan: false` = pratinjau, tidak menulis ke profil. Jawaban boleh parsial; dimensi dengan butir terjawab terlalu sedikit tidak dihitung. Hasil memuat `holland_code`, `skor_norm` (0 sampai 1), `keyakinan` beserta `alasan_keyakinan`, dan pernyataan bahwa ini bukan tes psikologi."
+          },
+          "response": []
+        },
+        {
+          "name": "Simpan skor minat ke profil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
+                  "const j = pm.response.json();",
+                  "pm.test(\"Respons memuat holland_code, skor_norm, tersimpan, keyakinan\", function () { pm.expect(j).to.include.keys(\"holland_code\", \"skor_norm\", \"tersimpan\", \"keyakinan\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/riasec/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "riasec",
+                "submit"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jawaban\": {\n    \"r1\": 0,\n    \"r2\": 1,\n    \"r3\": 2,\n    \"r4\": 3,\n    \"r5\": 4,\n    \"r6\": 0,\n    \"i1\": 2,\n    \"i2\": 3,\n    \"i3\": 4,\n    \"i4\": 0,\n    \"i5\": 1,\n    \"i6\": 2,\n    \"a1\": 4,\n    \"a2\": 0,\n    \"a3\": 1,\n    \"a4\": 2,\n    \"a5\": 3,\n    \"a6\": 4,\n    \"s1\": 1,\n    \"s2\": 2,\n    \"s3\": 3,\n    \"s4\": 4,\n    \"s5\": 0,\n    \"s6\": 1,\n    \"e1\": 3,\n    \"e2\": 4,\n    \"e3\": 0,\n    \"e4\": 1,\n    \"e5\": 2,\n    \"e6\": 3,\n    \"c1\": 0,\n    \"c2\": 1,\n    \"c3\": 2,\n    \"c4\": 3,\n    \"c5\": 4,\n    \"c6\": 0\n  },\n  \"simpan\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Sama seperti pratinjau, tetapi `simpan: true` memetakan `skor_norm` ke `profil.minat` (dimensi yang tidak dihitung dihapus). `/explore` lalu memakainya dan menandai hasil berkeyakinan rendah. Jawaban mentah tidak disimpan."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "05 Eksplorasi",
       "description": "Rekomendasi rumpun, deterministik tanpa LLM.",
       "item": [
@@ -2399,7 +2540,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                  "pm.test(\"Respons memuat jawaban, sumber, dokumen_terkait, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"dokumen_terkait\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
                 ]
               }
             }
@@ -2447,7 +2588,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                  "pm.test(\"Respons memuat jawaban, sumber, dokumen_terkait, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"dokumen_terkait\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
                 ]
               }
             }
@@ -2495,7 +2636,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
+                  "pm.test(\"Respons memuat jawaban, sumber, dokumen_terkait, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"dokumen_terkait\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });"
                 ]
               }
             }
@@ -2543,7 +2684,7 @@
                 "exec": [
                   "pm.test(\"Status 200\", function () { pm.response.to.have.status(200); });",
                   "const j = pm.response.json();",
-                  "pm.test(\"Respons memuat jawaban, sumber, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });",
+                  "pm.test(\"Respons memuat jawaban, sumber, dokumen_terkait, yakin, fallback, mode, jenis_jawaban\", function () { pm.expect(j).to.include.keys(\"jawaban\", \"sumber\", \"dokumen_terkait\", \"yakin\", \"fallback\", \"mode\", \"jenis_jawaban\"); });",
                   "pm.test(\"yakin = false\", function () { pm.expect(j.yakin).to.eql(false); });"
                 ]
               }

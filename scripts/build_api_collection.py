@@ -204,6 +204,59 @@ R_PRODI_DETAIL = Req(
     kunci=("id", "nama"),
 )
 
+
+def _jawaban_riasec() -> dict[str, int]:
+    """Jawaban contoh untuk SEMUA butir instrumen yang aktif (data/riasec), bervariasi tetapi tetap.
+
+    Dibaca dari berkas instrumen saat koleksi dibangun, jadi koleksi harus dibangun ulang setelah
+    instrumen diganti (tes `berkas_di_repo_sama_dengan_generator` mengingatkannya).
+    """
+    from app.core.config import Settings, load_app_config
+    from app.services.riasec import muat_instrumen
+
+    settings = Settings(_env_file=None)
+    instr = muat_instrumen(settings.riasec_dir, load_app_config(settings.app_config_path))
+    rentang = instr.skala_maks - instr.skala_min + 1
+    hasil: dict[str, int] = {}
+    urut: dict[str, int] = {}
+    for b in instr.item:
+        i = urut[b.dimensi] = urut.get(b.dimensi, -1) + 1
+        k = instr.dimensi.index(b.dimensi)
+        hasil[b.id] = instr.skala_min + (2 * k + i) % rentang
+    return hasil
+
+
+R_RIASEC_Q = Req(
+    "Ambil butir tes minat",
+    "GET",
+    "/riasec/questions",
+    "Instrumen tes minat RIASEC: `versi_instrumen`, `skala`, `dimensi`, `item`, `sumber`. Publik (tanpa "
+    "token). `instrumen_contoh: true` berarti berkas contoh sementara, bukan instrumen final.",
+    auth="none",
+    kunci=("versi_instrumen", "skala", "dimensi", "item", "sumber"),
+)
+R_RIASEC_PRATINJAU = Req(
+    "Hitung skor minat (pratinjau)",
+    "POST",
+    "/riasec/submit",
+    "Skoring deterministik tanpa LLM. `simpan: false` = pratinjau, tidak menulis ke profil. Jawaban boleh "
+    "parsial; dimensi dengan butir terjawab terlalu sedikit tidak dihitung. Hasil memuat `holland_code`, "
+    "`skor_norm` (0 sampai 1), `keyakinan` beserta `alasan_keyakinan`, dan pernyataan bahwa ini bukan "
+    "tes psikologi.",
+    body={"jawaban": _jawaban_riasec(), "simpan": False},
+    kunci=("holland_code", "dimensi_teratas", "skor_norm", "keyakinan", "tersimpan", "pernyataan"),
+)
+R_RIASEC_SIMPAN = Req(
+    "Simpan skor minat ke profil",
+    "POST",
+    "/riasec/submit",
+    "Sama seperti pratinjau, tetapi `simpan: true` memetakan `skor_norm` ke `profil.minat` (dimensi yang "
+    "tidak dihitung dihapus). `/explore` lalu memakainya dan menandai hasil berkeyakinan rendah. Jawaban "
+    "mentah tidak disimpan.",
+    body={"jawaban": _jawaban_riasec(), "simpan": True},
+    kunci=("holland_code", "skor_norm", "tersimpan", "keyakinan"),
+)
+
 R_EXPLORE = Req(
     "Rekomendasi rumpun",
     "POST",
@@ -579,6 +632,12 @@ def semua_folder() -> tuple[Folder, ...]:
             "04 Katalog",
             "Penelusuran PTN dan prodi.",
             (R_PTN, R_PRODI, R_PRODI_VOKASI, R_PRODI_DETAIL),
+        ),
+        Folder(
+            "04b Tes minat RIASEC",
+            "Template tetap, skoring deterministik tanpa LLM. Bukan tes psikologi dan bukan diagnosis. "
+            "Jalankan setelah **Buat sesi**; hasil yang disimpan dipakai oleh folder Eksplorasi.",
+            (R_RIASEC_Q, R_RIASEC_PRATINJAU, R_RIASEC_SIMPAN),
         ),
         Folder(
             "05 Eksplorasi",
