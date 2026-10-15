@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import math
+import time
 from collections.abc import Sequence
 from typing import Any, Protocol
 
@@ -17,6 +18,7 @@ from pydantic import BaseModel
 from app.llm.errors import (
     LLMGagal,
     LLMKuotaHabis,
+    LLMLayananSibuk,
     LLMModelTidakAda,
     LLMTidakDikonfigurasi,
     LLMTimeout,
@@ -71,6 +73,8 @@ def petakan_error(exc: Exception) -> Exception:
             return LLMModelTidakAda("model tidak ditemukan di penyedia LLM (404)")
         if kode in (408, 504):
             return LLMTimeout(f"timeout dari penyedia LLM ({kode})")
+        if kode == 503:
+            return LLMLayananSibuk("penyedia LLM sedang sibuk (503)")
         return LLMGagal(f"penyedia LLM mengembalikan error {kode}")
     return LLMGagal(f"panggilan LLM gagal: {type(exc).__name__}")
 
@@ -85,8 +89,10 @@ class GeminiClient:
         dimensi: int,
         timeout_detik: float,
         model_cadangan: Sequence[str] = (),
+        jeda_ulang_503_detik: float = 0.5,
         sdk_client: Any | None = None,
     ) -> None:
+        self._jeda_ulang = jeda_ulang_503_detik
         self._model = model
         # Urutan percobaan generate: utama lalu cadangan (tanpa duplikat).
         self._urutan_model = [model, *[n for n in dict.fromkeys(model_cadangan) if n != model]]
@@ -123,33 +129,44 @@ class GeminiClient:
         return vektor
 
     def _generate_dengan_cadangan(self, prompt: str, config: Any) -> Any:
-        """Coba model utama, lalu cadangan, hanya untuk 404 (model hilang) dan 429 (kuota).
+        """Rantai: model utama, ulangi SEKALI bila 503, lalu model cadangan, lalu error ke pemanggil.
 
-        Error lain (timeout, 5xx, kredensial) langsung dilempar: model lain tidak menolongnya.
-        Bila semua model gagal, error terakhir dilempar dan pemanggil jatuh ke teks template.
+        Pindah ke model berikutnya untuk 404 (model hilang), 429 (kuota), 503 (setelah satu
+        ulangan), dan timeout (408/504/httpx). Error lain (kredensial, 400, respons aneh) langsung
+        dilempar karena model lain tidak menolongnya. Bila semua model gagal, error terakhir
+        dilempar dan pemanggil (LLMService) jatuh ke teks template.
         """
         terakhir: Exception | None = None
         for nama in self._urutan_model:
             if nama in self._model_tidak_ada:
                 continue
-            try:
-                res = self._client.models.generate_content(
-                    model=nama, contents=prompt, config=config
-                )
-            except Exception as exc:
-                dipetakan = petakan_error(exc)
-                if isinstance(dipetakan, LLMModelTidakAda):
-                    self._model_tidak_ada.add(nama)
-                    log.warning("model generate tidak ditemukan (404): %s", nama)
-                elif isinstance(dipetakan, LLMKuotaHabis):
-                    log.warning("kuota model generate habis (429): %s", nama)
-                else:
-                    raise dipetakan from None
-                terakhir = dipetakan
-                continue
-            if nama != self._model:
-                log.info("generate dijawab model cadangan: %s", nama)
-            return res
+            for percobaan in (1, 2):
+                try:
+                    res = self._client.models.generate_content(
+                        model=nama, contents=prompt, config=config
+                    )
+                except Exception as exc:
+                    dipetakan = petakan_error(exc)
+                    if isinstance(dipetakan, LLMLayananSibuk):
+                        if percobaan == 1:
+                            log.warning("model generate sibuk (503), mengulang sekali: %s", nama)
+                            time.sleep(self._jeda_ulang)
+                            continue
+                        log.warning("model generate masih sibuk (503): %s", nama)
+                    elif isinstance(dipetakan, LLMModelTidakAda):
+                        self._model_tidak_ada.add(nama)
+                        log.warning("model generate tidak ditemukan (404): %s", nama)
+                    elif isinstance(dipetakan, LLMKuotaHabis):
+                        log.warning("kuota model generate habis (429): %s", nama)
+                    elif isinstance(dipetakan, LLMTimeout):
+                        log.warning("model generate timeout: %s", nama)
+                    else:
+                        raise dipetakan from None
+                    terakhir = dipetakan
+                    break  # model ini gagal: coba model berikutnya
+                if nama != self._model:
+                    log.info("generate dijawab model cadangan: %s", nama)
+                return res
         raise (terakhir or LLMModelTidakAda("semua model generate tidak tersedia (404)")) from None
 
     def generate(

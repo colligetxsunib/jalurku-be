@@ -19,9 +19,9 @@ llm:
   # untuk cadangan), karena penyedia bisa menghentikan model (404). Cari nama yang valid:
   #   uv run python -m scripts.list_models   lalu   uv run python -m scripts.check_gemini
   model: gemini-2.5-flash
-  timeout_detik: 20
+  timeout_detik: 10
   maks_konkuren: 3
-  cache_ttl_detik: 86400
+  cache_ttl_detik: 259200          # 72 jam, selaras dengan sesi demo; kunci cache memuat model, prompt, dan fakta
 
 embedding:
   # DIKUNCI. Mengganti model atau dimensi berarti migrasi kolom dan re-embed semua chunk.

@@ -23,6 +23,7 @@ from app.llm.client import GeminiClient, NullClient, l2_normalisasi, petakan_err
 from app.llm.errors import (
     LLMGagal,
     LLMKuotaHabis,
+    LLMLayananSibuk,
     LLMModelTidakAda,
     LLMTidakDikonfigurasi,
     LLMTimeout,
@@ -263,6 +264,8 @@ class SDKPerModel:
     def _generate(self, *, model, contents, config):
         self.dicoba.append(model)
         h = self.hasil[model]
+        if isinstance(h, list):  # urutan hasil per panggilan ke model yang sama
+            h = h.pop(0) if len(h) > 1 else h[0]
         if isinstance(h, Exception):
             raise h
         return SimpleNamespace(text=h)
@@ -270,6 +273,9 @@ class SDKPerModel:
 
 E404 = gerrors.ClientError(404, {"error": {"message": "x"}})
 E429 = gerrors.ClientError(429, {"error": {"message": "x"}})
+E503 = gerrors.ServerError(503, {"error": {"message": "x"}})
+E504 = gerrors.ServerError(504, {"error": {"message": "x"}})
+ETIMEOUT = httpx.ReadTimeout("lambat")
 
 
 def gemini_cadangan(sdk, cadangan) -> GeminiClient:
@@ -280,15 +286,48 @@ def gemini_cadangan(sdk, cadangan) -> GeminiClient:
         dimensi=768,
         timeout_detik=5,
         model_cadangan=cadangan,
+        jeda_ulang_503_detik=0,
         sdk_client=sdk,
     )
 
 
-@pytest.mark.parametrize("galat", [E404, E429])
-def test_model_utama_404_atau_429_dicoba_cadangan_berurutan(galat):
+@pytest.mark.parametrize("galat", [E404, E429, E504, ETIMEOUT])
+def test_model_utama_404_429_atau_timeout_dicoba_cadangan_berurutan(galat):
     sdk = SDKPerModel({"utama": galat, "c1": E429, "c2": "dari c2"})
     assert gemini_cadangan(sdk, ["c1", "c2"]).generate("halo") == "dari c2"
-    assert sdk.dicoba == ["utama", "c1", "c2"]
+    assert sdk.dicoba == ["utama", "c1", "c2"]  # timeout/404/429 tidak diulang, langsung pindah
+
+
+def test_503_diulang_sekali_pada_model_yang_sama_lalu_berhasil():
+    sdk = SDKPerModel({"utama": [E503, "pulih"], "c1": "tidak dipakai"})
+    assert gemini_cadangan(sdk, ["c1"]).generate("halo") == "pulih"
+    assert sdk.dicoba == ["utama", "utama"]
+
+
+def test_503_dua_kali_pindah_ke_cadangan_dan_cadangan_juga_diulang_sekali():
+    sdk = SDKPerModel({"utama": E503, "c1": [E503, "dari c1"]})
+    assert gemini_cadangan(sdk, ["c1"]).generate("halo") == "dari c1"
+    assert sdk.dicoba == ["utama", "utama", "c1", "c1"]  # maksimal dua percobaan per model
+
+
+def test_semua_model_503_melempar_layanan_sibuk_untuk_template():
+    sdk = SDKPerModel({"utama": E503, "c1": E503})
+    with pytest.raises(LLMLayananSibuk):
+        gemini_cadangan(sdk, ["c1"]).generate("halo")
+    assert sdk.dicoba == ["utama", "utama", "c1", "c1"]
+
+
+def test_semua_model_timeout_melempar_timeout_untuk_template():
+    sdk = SDKPerModel({"utama": ETIMEOUT, "c1": E504})
+    with pytest.raises(LLMTimeout):
+        gemini_cadangan(sdk, ["c1"]).generate("halo")
+    assert sdk.dicoba == ["utama", "c1"]
+
+
+def test_rantai_campuran_404_lalu_503_lalu_sukses():
+    sdk = SDKPerModel({"utama": E404, "c1": [E503, E503], "c2": "akhirnya"})
+    assert gemini_cadangan(sdk, ["c1", "c2"]).generate("halo") == "akhirnya"
+    assert sdk.dicoba == ["utama", "c1", "c1", "c2"]
 
 
 def test_cadangan_tidak_dicoba_bila_utama_berhasil_dan_duplikat_diabaikan():
@@ -297,11 +336,20 @@ def test_cadangan_tidak_dicoba_bila_utama_berhasil_dan_duplikat_diabaikan():
     assert sdk.dicoba == ["utama"]
 
 
-def test_error_selain_404_429_tidak_dicoba_ke_cadangan():
-    sdk = SDKPerModel({"utama": gerrors.ServerError(503, {"error": {"message": "x"}}), "c1": "ok"})
+@pytest.mark.parametrize(
+    "galat",
+    [
+        gerrors.ServerError(500, {"error": {"message": "x"}}),
+        gerrors.ClientError(403, {"error": {"message": "x"}}),
+        gerrors.ClientError(400, {"error": {"message": "x"}}),
+        RuntimeError("tak terduga"),
+    ],
+)
+def test_error_selain_404_429_503_timeout_tidak_dicoba_ke_cadangan(galat):
+    sdk = SDKPerModel({"utama": galat, "c1": "ok"})
     with pytest.raises(LLMGagal):
         gemini_cadangan(sdk, ["c1"]).generate("halo")
-    assert sdk.dicoba == ["utama"]
+    assert sdk.dicoba == ["utama"]  # kredensial/permintaan salah: model lain tidak menolong
 
 
 def test_semua_model_gagal_melempar_error_terakhir_dan_404_diingat():

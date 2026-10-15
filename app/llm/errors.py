@@ -29,3 +29,7 @@ class LLMAntreanPenuh(LLMError):
 
 class LLMGagal(LLMError):
     """Kegagalan lain (kredensial, 5xx, respons kosong/tidak sesuai)."""
+
+
+class LLMLayananSibuk(LLMGagal):
+    """HTTP 503 dari penyedia (kelebihan beban sesaat): diulang sekali, lalu model cadangan."""

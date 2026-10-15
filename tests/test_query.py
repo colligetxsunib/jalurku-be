@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable
+from types import SimpleNamespace
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
+from google.genai import errors as gerrors
 from sqlalchemy import Engine, text
 from sqlalchemy.orm import Session
 
@@ -14,6 +17,7 @@ from app.core.config import AppConfig, Batas
 from app.db import models as m
 from app.domain.intent import adalah_pertanyaan_keputusan
 from app.ingest.service import ingest, ingest_direktori
+from app.llm.client import GeminiClient
 from app.llm.errors import LLMGagal, LLMKuotaHabis
 from app.llm.fallback_texts import (
     TEKS_JELASKAN_PENGANTAR,
@@ -343,7 +347,106 @@ def test_llm_generate_gagal_fallback_dengan_tautan_sumber(bangun):
     h = muat_persona(c, "rani")
     d = ok(tanya(c, h, Q_PILIHAN))
     assert d["yakin"] is False and d["fallback"] is True and d["jawaban"] == TEKS_LAYANAN_GAGAL
-    assert d["sumber"][0]["halaman"] == 12  # retrieval sukses: siswa tetap bisa membuka sumbernya
+    assert d["sumber"] == []
+    assert (
+        d["dokumen_terkait"][0]["halaman"] == 12
+    )  # tetap bisa dibuka, tetapi bukan "sumber jawaban"
+
+
+class _SDKGagal:
+    """SDK palsu: embed selalu berhasil (unit(0)); generate gagal sesuai urutan per model."""
+
+    def __init__(self, hasil: dict):
+        self.hasil, self.dicoba = hasil, []
+        self.models = SimpleNamespace(embed_content=self._embed, generate_content=self._generate)
+
+    def _embed(self, *, model, contents, config):
+        return SimpleNamespace(embeddings=[SimpleNamespace(values=unit(0)) for _ in contents])
+
+    def _generate(self, *, model, contents, config):
+        self.dicoba.append(model)
+        h = self.hasil[model]
+        if isinstance(h, list):
+            h = h.pop(0) if len(h) > 1 else h[0]
+        if isinstance(h, Exception):
+            raise h
+        return SimpleNamespace(text=h)
+
+
+def _gemini_palsu(sdk, cadangan=("cadangan",)):
+    return GeminiClient(
+        "kunci-palsu",
+        model="utama",
+        embedding_model="gemini-embedding-001",
+        dimensi=768,
+        timeout_detik=10,
+        model_cadangan=list(cadangan),
+        jeda_ulang_503_detik=0,
+        sdk_client=sdk,
+    )
+
+
+_JAWAB_JSON = JawabanRAG(
+    jawaban="SNBP 2026 memiliki 2 pilihan program studi.", cukup_informasi=True
+).model_dump_json()
+_E = lambda kode, cls=gerrors.ClientError: cls(kode, {"error": {"message": "x"}})  # noqa: E731
+
+
+@pytest.mark.parametrize(
+    "hasil_utama,hasil_cadangan,model_menjawab",
+    [
+        (_E(404), _JAWAB_JSON, "cadangan"),
+        (_E(429), _JAWAB_JSON, "cadangan"),
+        ([_E(503, gerrors.ServerError), _E(503, gerrors.ServerError)], _JAWAB_JSON, "cadangan"),
+        (_E(504, gerrors.ServerError), _JAWAB_JSON, "cadangan"),
+        (httpx.ReadTimeout("lambat"), _JAWAB_JSON, "cadangan"),
+        ([_E(503, gerrors.ServerError), _JAWAB_JSON], "tidak dipakai", "utama"),
+    ],
+    ids=["404", "429", "503x2", "504", "timeout", "503-lalu-pulih"],
+)
+def test_query_jalur_cadangan_model_tetap_menjawab_tanpa_fallback_template(
+    bangun, hasil_utama, hasil_cadangan, model_menjawab
+):
+    sdk = _SDKGagal({"utama": hasil_utama, "cadangan": hasil_cadangan})
+    c, _ = bangun(_gemini_palsu(sdk))
+    h = muat_persona(c, "rani")
+    d = ok(tanya(c, h, Q_PILIHAN))
+    assert d["fallback"] is False and d["yakin"] is True
+    assert sdk.dicoba[-1] == model_menjawab
+
+
+@pytest.mark.parametrize(
+    "galat",
+    [
+        _E(404),
+        _E(429),
+        _E(503, gerrors.ServerError),
+        _E(504, gerrors.ServerError),
+        httpx.ReadTimeout("lambat"),
+        _E(500, gerrors.ServerError),
+        RuntimeError("tak terduga"),
+    ],
+    ids=["404", "429", "503", "504", "timeout", "500", "tak-terduga"],
+)
+def test_query_semua_model_gagal_jatuh_ke_template_bukan_5xx(bangun, galat):
+    sdk = _SDKGagal({"utama": galat, "cadangan": galat})
+    c, _ = bangun(_gemini_palsu(sdk))
+    h = muat_persona(c, "rani")
+    r = tanya(c, h, Q_PILIHAN)
+    assert r.status_code == 200, r.text  # LLM gagal tidak boleh menjadi 5xx
+    d = ok(r)
+    assert d["fallback"] is True and d["yakin"] is False and d["jawaban"] == TEKS_LAYANAN_GAGAL
+    assert d["sumber"] == [] and d["dokumen_terkait"]  # bahan bacaan saja, bukan sumber jawaban
+
+
+def test_jelaskan_tidak_5xx_saat_semua_model_gagal(bangun):
+    sdk = _SDKGagal({"utama": _E(503, gerrors.ServerError), "cadangan": httpx.ReadTimeout("x")})
+    c, _ = bangun(_gemini_palsu(sdk))
+    h = muat_persona(c, "rani")
+    ok_analisis(c, h)
+    r = tanya(c, h, "Kenapa hasilnya begitu?", "jelaskan", prodi_id=IK, jalur="SNBT")
+    assert r.status_code == 200, r.text
+    assert r.json()["fallback"] is True and r.json()["jawaban"].startswith(TEKS_JELASKAN_PENGANTAR)
 
 
 def test_keluaran_llm_bukan_json_dianggap_gagal(bangun):
