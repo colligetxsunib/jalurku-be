@@ -128,7 +128,10 @@ def create_app(
             CORSMiddleware,
             allow_origins=settings.cors_origins_list,
             allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            allow_headers=["Authorization", "Content-Type"],
+            # Authorization = token sesi; Content-Type = JSON; X-Admin-Key = kurasi
+            # admin (/api/v1/admin/*). Tanpa nama header di sini, preflight browser
+            # untuk endpoint admin ditolak (tanpa ACAO) walau origin terdaftar.
+            allow_headers=["Authorization", "Content-Type", "X-Admin-Key"],
         )
 
     register_exception_handlers(app)

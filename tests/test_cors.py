@@ -4,6 +4,8 @@ Latar: frontend dev di http://localhost:4173 kena blokir preflight karena origin
 CORS_ORIGINS produksi. Mekanisme (CORSMiddleware + daftar eksplisit dari env) sudah benar; yang
 kurang hanya entrinya. Tes ini mengunci perilaku mekanisme tersebut tanpa menyentuh nilai
 produksi: dev lolos bila terdaftar, produksi tetap lolos, tak terdaftar tetap ditolak.
+Kasus admin: endpoint /api/v1/admin/* memakai header X-Admin-Key, sehingga header itu wajib ada
+di allow_headers — kalau tidak, preflight-nya ditolak walau origin terdaftar.
 """
 
 from __future__ import annotations
@@ -27,6 +29,16 @@ TARGET = "/api/v1/riasec/questions"  # endpoint publik tempat laporan berasal
 def app_cors(clean_db, app_config):
     origins = ",".join([PROD, DEV, DEV_IP])
     app = create_app(make_settings(cors_origins=origins), app_config, clean_db)
+    with TestClient(app, raise_server_exceptions=False) as c:
+        yield c
+
+
+@pytest.fixture()
+def app_cors_admin(clean_db, app_config):
+    origins = ",".join([PROD, DEV, DEV_IP])
+    app = create_app(
+        make_settings(cors_origins=origins, admin_key="kunci-uji-cors"), app_config, clean_db
+    )
     with TestClient(app, raise_server_exceptions=False) as c:
         yield c
 
@@ -78,3 +90,30 @@ def test_tanpa_daftar_origin_tidak_ada_header_acao(client):
         },
     )
     assert "access-control-allow-origin" not in r.headers
+
+
+@pytest.mark.parametrize(
+    "path", ["/api/v1/admin/ingest", "/api/v1/admin/dokumen/snpmb-paparan-2026/berkas"]
+)
+def test_preflight_admin_dengan_x_admin_key(app_cors_admin, path):
+    r = app_cors_admin.options(
+        path,
+        headers={
+            "Origin": DEV,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type, x-admin-key",
+        },
+    )
+    assert r.status_code == 200, (path, r.text)
+    assert r.headers.get("access-control-allow-origin") == DEV, path
+    assert "x-admin-key" in r.headers.get("access-control-allow-headers", "").lower(), path
+
+
+def test_admin_kunci_salah_tetap_401_dan_membawa_acao(app_cors_admin):
+    r = app_cors_admin.post(
+        "/api/v1/admin/ingest",
+        json={"tipe": "ketentuan", "payload": []},
+        headers={"Origin": DEV, "X-Admin-Key": "salah"},
+    )
+    assert r.status_code == 401, r.text
+    assert r.headers.get("access-control-allow-origin") == DEV
