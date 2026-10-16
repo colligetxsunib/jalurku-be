@@ -117,3 +117,19 @@ def test_admin_kunci_salah_tetap_401_dan_membawa_acao(app_cors_admin):
     )
     assert r.status_code == 401, r.text
     assert r.headers.get("access-control-allow-origin") == DEV
+
+
+@pytest.mark.parametrize("path", ["/api/v1/profile", "/api/v1/session", TARGET])
+def test_preflight_bertoken_dengan_x_session_token(app_cors, path):
+    """Frontend mengirim X-Session-Token di tiap request bertoken (api.ts)."""
+    r = app_cors.options(
+        path,
+        headers={
+            "Origin": DEV,
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "authorization, content-type, x-session-token",
+        },
+    )
+    assert r.status_code == 200, (path, r.text)
+    assert r.headers.get("access-control-allow-origin") == DEV, path
+    assert "x-session-token" in r.headers.get("access-control-allow-headers", "").lower(), path

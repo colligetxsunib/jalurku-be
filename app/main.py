@@ -131,7 +131,10 @@ def create_app(
             # Authorization = token sesi; Content-Type = JSON; X-Admin-Key = kurasi
             # admin (/api/v1/admin/*). Tanpa nama header di sini, preflight browser
             # untuk endpoint admin ditolak (tanpa ACAO) walau origin terdaftar.
-            allow_headers=["Authorization", "Content-Type", "X-Admin-Key"],
+            # X-Session-Token = header duplikat yang dikirim frontend di tiap request
+            # bertoken (backend mengabaikannya; auth murni Authorization Bearer).
+            # Tanpa nama ini, SEMUA preflight bertoken ditolak walau origin terdaftar.
+            allow_headers=["Authorization", "Content-Type", "X-Admin-Key", "X-Session-Token"],
         )
 
     register_exception_handlers(app)
